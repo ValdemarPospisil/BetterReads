@@ -1,0 +1,33 @@
+services:
+  flask:
+    build: .
+    container_name: flask-app
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development  # Change to production for production environment
+      NEO4J_URI: "bolt://neo4j:7687"
+      NEO4J_USER: "neo4j"
+      NEO4J_PASSWORD: "PassatGolf"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+    depends_on:
+      - neo4j
+      - redis
+    volumes:
+      - ./code:/code
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  neo4j:
+    image: neo4j:latest
+    container_name: neo4j
+    ports:
+      - "7474:7474"  # Browser
+      - "7687:7687"  # Bolt
+    environment:
+      NEO4J_AUTH: "neo4j/PassatGolf"
