@@ -1,0 +1,38 @@
+{% extends "template.html" %}
+{% block subtitle %}Add a Book{% endblock %}
+{% block main %}
+<div class="container">
+    <h2>Add a New Book</h2>
+    <form action="{{ url_for('create_book') }}" method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">Book Name</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="pages" class="form-label">Pages</label>
+            <input type="number" class="form-control" id="pages" name="pages" required>
+        </div>
+        <div class="mb-3">
+            <label for="datePublished" class="form-label">Date Published</label>
+            <input type="date" class="form-control" id="datePublished" name="datePublished">
+        </div>
+        <div class="mb-3">
+            <label for="ISBN" class="form-label">ISBN</label>
+            <input type="text" class="form-control" id="ISBN" name="ISBN">
+        </div>
+        <div class="mb-3">
+            <label for="author_name" class="form-label">Author Name</label>
+            <input type="text" class="form-control" id="author_name" name="author_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="author_surname" class="form-label">Author Surname</label>
+            <input type="text" class="form-control" id="author_surname" name="author_surname" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Book</button>
+    </form>
+</div>
+{% endblock %}
