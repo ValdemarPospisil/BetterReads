@@ -1,2 +1,2 @@
 # BetterReads
-Sociální síť na téma knih, vytvořená pomocí NSQL databáze Neo4j.
+Social network website with a book theme. Made with the use of Neo4j, Flask and Redis.
