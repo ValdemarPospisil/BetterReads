@@ -31,3 +31,4 @@ services:
       - "7687:7687"  # Bolt
     environment:
       NEO4J_AUTH: "neo4j/PassatGolf"
+

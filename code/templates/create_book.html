@@ -1,38 +1,123 @@
-{% extends "template.html" %}
-{% block subtitle %}Add a Book{% endblock %}
-{% block main %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Book</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 50%;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-group textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        .form-group input[type="file"] {
+            padding: 5px;
+        }
+        .form-group button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .form-group button:hover {
+            background-color: #45a049;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            display: block;
+        }
+        .back-link a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
 <div class="container">
-    <h2>Add a New Book</h2>
-    <form action="{{ url_for('create_book') }}" method="post">
-        <div class="mb-3">
-            <label for="name" class="form-label">Book Name</label>
+    <h1>Create a New Book</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="name">Book Name</label>
             <input type="text" class="form-control" id="name" name="name" required>
         </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description"></textarea>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea class="form-control" id="description" name="description" required></textarea>
         </div>
-        <div class="mb-3">
-            <label for="pages" class="form-label">Pages</label>
-            <input type="number" class="form-control" id="pages" name="pages" required>
+        <div class="form-group">
+            <label for="pages">Pages</label>
+            <input type="text" class="form-control" id="pages" name="pages" required>
         </div>
-        <div class="mb-3">
-            <label for="datePublished" class="form-label">Date Published</label>
-            <input type="date" class="form-control" id="datePublished" name="datePublished">
+        <div class="form-group">
+            <label for="datePublished">Date Published</label>
+            <input type="date" class="form-control" id="datePublished" name="datePublished" required>
         </div>
-        <div class="mb-3">
-            <label for="ISBN" class="form-label">ISBN</label>
-            <input type="text" class="form-control" id="ISBN" name="ISBN">
+        <div class="form-group">
+            <label for="ISBN">ISBN</label>
+            <input type="text" class="form-control" id="ISBN" name="ISBN" required>
         </div>
-        <div class="mb-3">
-            <label for="author_name" class="form-label">Author Name</label>
+        <div class="form-group">
+            <label for="author_name">Author Name</label>
             <input type="text" class="form-control" id="author_name" name="author_name" required>
         </div>
-        <div class="mb-3">
-            <label for="author_surname" class="form-label">Author Surname</label>
+        <div class="form-group">
+            <label for="author_surname">Author Surname</label>
             <input type="text" class="form-control" id="author_surname" name="author_surname" required>
         </div>
-        <button type="submit" class="btn btn-primary">Add Book</button>
+        <div class="form-group">
+            <label for="image">Book Image</label>
+            <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+        </div>
+        <button type="submit" class="btn btn-primary">Create Book</button>
     </form>
+    
+    <div class="back-link">
+        <a href="{{ url_for('index') }}">Back to Homepage</a>
+    </div>
 </div>
-{% endblock %}
+
+</body>
+</html>
