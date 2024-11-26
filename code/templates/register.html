@@ -1,0 +1,59 @@
+{% extends "template.html" %}
+
+{% block subtitle %}Register{% endblock %}
+
+{% block main %}
+<div class="container">
+    <h1>Register</h1>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('register') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            <label for="full_name">{{ form.full_name.label }}</label>
+            {{ form.full_name(class="form-control", id="full_name", size=32) }}
+            {% for error in form.full_name.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label for="nickname">{{ form.nickname.label }}</label>
+            {{ form.nickname(class="form-control", id="nickname", size=32) }}
+            {% for error in form.nickname.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label for="email">{{ form.email.label }}</label>
+            {{ form.email(class="form-control", id="email", size=32) }}
+            {% for error in form.email.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label for="password">{{ form.password.label }}</label>
+            {{ form.password(class="form-control", id="password", size=32) }}
+            {% for error in form.password.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label for="confirm_password">{{ form.confirm_password.label }}</label>
+            {{ form.confirm_password(class="form-control", id="confirm_password", size=32) }}
+            {% for error in form.confirm_password.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            <label for="role">{{ form.role.label }}</label>
+            {{ form.role(class="form-control", id="role") }}
+            {% for error in form.role.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+    </form>
+    <p>Already a member? <a href="{{ url_for('register') }}">Login here</a></p>
+    <div class="back-link">
+        <a href="{{ url_for('index') }}">Back to Homepage</a>
+    </div>
+</div>
+{% endblock %}

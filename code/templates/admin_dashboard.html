@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/admin_dashboard.css">
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="/admin/users">Manage Users</a></li>
+                <li><a href="/admin/books">Manage Books</a></li>
+                <li><a href="/admin/reviews">Manage Reviews</a></li>
+                <li><a href="/admin/settings">Settings</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="user-management">
+            <h2>Manage Users</h2>
+            <p>View, edit, and delete user accounts.</p>
+            <button onclick="location.href='/admin/users'">Go to User Management</button>
+        </section>
+        <section id="book-management">
+            <h2>Manage Books</h2>
+            <p>Add, edit, and delete books in the catalog.</p>
+            <button onclick="location.href='/admin/books'">Go to Book Management</button>
+        </section>
+        <section id="review-management">
+            <h2>Manage Reviews</h2>
+            <p>Approve, edit, and delete user reviews.</p>
+            <button onclick="location.href='/admin/reviews'">Go to Review Management</button>
+        </section>
+        <section id="settings">
+            <h2>Settings</h2>
+            <p>Configure application settings.</p>
+            <button onclick="location.href='/admin/settings'">Go to Settings</button>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2023 BetterReads. All rights reserved.</p>
+    </footer>
+</body>
+</html>

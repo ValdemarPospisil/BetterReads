@@ -6,37 +6,30 @@
 <div class="container">
     <h1>Create a New Book</h1>
     <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="name">Book Name</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            {{ form.name.label }} {{ form.name(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="description">Description</label>
-            <textarea class="form-control" id="description" name="description" required></textarea>
+            {{ form.description.label }} {{ form.description(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="pages">Pages</label>
-            <input type="text" class="form-control" id="pages" name="pages" required>
+            {{ form.pages.label }} {{ form.pages(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="datePublished">Date Published</label>
-            <input type="date" class="form-control" id="datePublished" name="datePublished" required>
+            {{ form.datePublished.label }} {{ form.datePublished(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="ISBN">ISBN</label>
-            <input type="text" class="form-control" id="ISBN" name="ISBN" required>
+            {{ form.author_name.label }} {{ form.author_name(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="author_name">Author Name</label>
-            <input type="text" class="form-control" id="author_name" name="author_name" required>
+            {{ form.author_surname.label }} {{ form.author_surname(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="author_surname">Author Surname</label>
-            <input type="text" class="form-control" id="author_surname" name="author_surname" required>
+            {{ form.genres.label }} {{ form.genres(class="form-control") }}
         </div>
         <div class="form-group">
-            <label for="image">Book Image</label>
-            <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+            {{ form.image.label }} {{ form.image(class="form-control-file") }}
         </div>
         <button type="submit" class="btn btn-primary">Create Book</button>
     </form>

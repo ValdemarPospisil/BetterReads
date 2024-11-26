@@ -5,5 +5,11 @@ About
 {% endblock %}
 
 {% block main %}
-Halo
+    <h1>Welcome to BetterReads</h1>
+    {% if 'nickname' in session %}
+        <p>Hello, {{ session['nickname'] }}!</p>
+        <p><a href="{{ url_for('logout') }}">Logout</a></p>
+    {% else %}
+        <p><a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a></p>
+    {% endif %}
 {% endblock %}

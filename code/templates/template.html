@@ -30,6 +30,13 @@
                     <li class="nav-item">
                         <a class="nav-link" href="books">Books</a>
                     </li>
+                    <li class="nav-item">
+                    {% if 'nickname' in session %}
+                    <a class="nav-link" href="{{ url_for('profile', nickname=session['nickname']) }}">{{ session['nickname'] }}</a>
+                    {% else %}
+                        <a class="nav-link" href="{{ url_for('login') }}">Sign in</a>
+                    {% endif %}
+                    </li>
                 </ul>
             </div>
         </div>
