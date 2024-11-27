@@ -13,3 +13,4 @@ WTForms==3.0.1
 cloudinary==1.41.0
 email_validator==1.1.1
 flask_session==0.8.0
+requests==2.26.0

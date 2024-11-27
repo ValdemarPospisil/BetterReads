@@ -1,0 +1,107 @@
+:root {
+    /* Primary Colors */
+    --background: #282a36; /* Main background color */
+    --foreground: #f8f8f2; /* Main text color */
+    --primary: #191e2c;    /* Primary accent color (e.g., headers, borders) */
+    --darker-primary: #10121a; /* Darker accent color for header */
+
+    /* Accent Colors */
+    --purple: #bd93f9; /* Highlights, buttons */
+    --green: #50fa7b;  /* Success messages, links */
+    --red: #ff5555;    /* Errors, warnings */
+    --orange: #ffb86c; /* Notifications, alerts */
+    --pink: #ff79c6;   /* Secondary highlights */
+    --yellow: #f1fa8c; /* Info or subtle highlights */
+    --cyan: #8be9fd;   /* Hover effects or buttons */
+
+    /* Neutral Colors */
+    --border: #44475a; /* Borders, dividers */
+    --hover: #3c3f51;  /* Hover effects background */
+    --muted-text: #6272a4; /* Placeholder text, secondary text */
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #ff79c6, #bd93f9);
+    --gradient-secondary: linear-gradient(135deg, #50fa7b, #8be9fd);
+}
+
+/* Form Styles */
+.form-container {
+    width: 80%;
+    margin: 50px auto;
+    background-color: var(--primary);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px var(--border);
+    color: var(--foreground);
+}
+
+.form-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 15px auto;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    background-color: var(--hover);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group button {
+    background-color: var(--green);
+    color: var(--background);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.form-group button:hover {
+    background-color: var(--cyan);
+}
+
+.btn-secondary {
+    background-color: var(--purple);
+    color: var(--background);
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+}
+
+.btn-secondary:hover {
+    background-color: var(--cyan);
+}

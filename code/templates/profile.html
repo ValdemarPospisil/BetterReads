@@ -1,0 +1,66 @@
+{% extends "template.html" %}
+{% block subtitle %}Profile of {{ nickname }}{% endblock %}
+{% block main %}
+<div class="container">
+    <h1>{{ nickname }}'s Profile</h1>
+    <div class="book-status-columns">
+        <div class="book-status-column">
+            <h2>Want to Read</h2>
+            {% if books.want_to_read %}
+                <div class="book-list">
+                    {% for book in books.want_to_read %}
+                        <div class="book-card">
+                            {% if book.image_url %}
+                                <img src="{{ book.image_url }}" alt="{{ book.name }}">
+                            {% else %}
+                                <img src="/static/default_book.png" alt="Default Book">
+                            {% endif %}
+                            <h3>{{ book.name }}</h3>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No books in this category.</p>
+            {% endif %}
+        </div>
+        <div class="book-status-column">
+            <h2>Reading</h2>
+            {% if books.reading %}
+                <div class="book-list">
+                    {% for book in books.reading %}
+                        <div class="book-card">
+                            {% if book.image_url %}
+                                <img src="{{ book.image_url }}" alt="{{ book.name }}">
+                            {% else %}
+                                <img src="/static/default_book.png" alt="Default Book">
+                            {% endif %}
+                            <h3>{{ book.name }}</h3>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No books in this category.</p>
+            {% endif %}
+        </div>
+        <div class="book-status-column">
+            <h2>Read</h2>
+            {% if books.read %}
+                <div class="book-list">
+                    {% for book in books.read %}
+                        <div class="book-card">
+                            {% if book.image_url %}
+                                <img src="{{ book.image_url }}" alt="{{ book.name }}">
+                            {% else %}
+                                <img src="/static/default_book.png" alt="Default Book">
+                            {% endif %}
+                            <h3>{{ book.name }}</h3>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No books in this category.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

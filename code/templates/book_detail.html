@@ -1,0 +1,35 @@
+{% extends "template.html" %}
+{% block subtitle %}{{ book.name }}{% endblock %}
+{% block main %}
+<div class="container book-detail">
+    <div class="book-detail-left">
+        <div class="book-detail-image">
+            {% if book.image_url %}
+                <img src="{{ book.image_url }}" alt="{{ book.name }}">
+            {% else %}
+                <img src="/static/default_book.png" alt="Default Book">
+            {% endif %}
+        </div>
+        {% if 'nickname' in session %}
+        <form method="POST" action="{{ url_for('update_book_status', book_name=book.name) }}" class="status-buttons">
+            <button type="submit" name="status" value="want_to_read" class="btn btn-want-to-read">Want to Read</button>
+            <button type="submit" name="status" value="reading" class="btn btn-reading">Reading</button>
+            <button type="submit" name="status" value="read" class="btn btn-read">Read</button>
+        </form>
+        {% else %}
+        <p>Please <a href="{{ url_for('login') }}">log in</a> to update your reading status.</p>
+        {% endif %}
+    </div>
+    <div class="book-detail-info">
+        <h1>{{ book.name }}</h1>
+        <p><strong>Author:</strong> {{ book.author }}</p>
+        <p><strong>Pages:</strong> {{ book.pages }}</p>
+        <p><strong>Date Published:</strong> {{ book.datePublished }}</p>
+        <p><strong>Description:</strong> {{ book.description }}</p>
+        <p><strong>Genres:</strong> {{ book.genres | join(', ') }}</p>
+        <div class="back-link">
+            <a href="{{ url_for('list_books') }}">Back to Books</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,9 +1,10 @@
 {% extends "template.html" %}
-
 {% block subtitle %}Login{% endblock %}
-
+{% block head %}
+<link href="{{ url_for('static', filename='css/form_styles.css') }}" rel="stylesheet">
+{% endblock %}
 {% block main %}
-<div class="container">
+<div class="form-container">
     <h1>Login</h1>
     <form method="POST" enctype="multipart/form-data" action="{{ url_for('login') }}">
         {{ form.hidden_tag() }}
@@ -21,11 +22,15 @@
                 <span style="color: red;">[{{ error }}]</span>
             {% endfor %}
         </div>
-        <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+        </div>
     </form>
-    <p>New here? <a href="{{ url_for('register') }}">Register here</a></p>
-    <div class="back-link">
-        <a href="{{ url_for('index') }}">Back to Homepage</a>
+    <div class="form-group">
+        <p>New here? <a href="{{ url_for('register') }}">Register here</a></p>
+    </div>
+    <div class="form-group">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Homepage</a>
     </div>
 </div>
 {% endblock %}

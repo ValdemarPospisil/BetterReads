@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, SelectMultipleField, TextAreaField, IntegerField, FileField
+from wtforms import StringField, PasswordField, SubmitField, DateField, SelectField, SelectMultipleField, TextAreaField, IntegerField, FileField
 from wtforms.validators import DataRequired, Email, EqualTo
 
 class RegistrationForm(FlaskForm):
@@ -21,7 +21,7 @@ class CreateBookForm(FlaskForm):
     name = StringField('Book Name', validators=[DataRequired()])
     description = TextAreaField('Description', validators=[DataRequired()])
     pages = IntegerField('Pages', validators=[DataRequired()])
-    datePublished = StringField('Date Published', validators=[DataRequired()])
+    datePublished = DateField('Date Published', validators=[DataRequired()])
     author_name = StringField('Author Name', validators=[DataRequired()])
     author_surname = StringField('Author Surname', validators=[DataRequired()])
     genres = SelectMultipleField('Genres', validators=[DataRequired()])

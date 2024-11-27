@@ -58,15 +58,31 @@ def roles_required(*roles):
 def admin_dashboard():
     return render_template('admin_dashboard.html')
 
-@app.route('/author')
-@roles_required('author')
-def author_dashboard():
-    return render_template('admin_dashboard.html')
-
 @app.route('/profile/<nickname>')
 def profile(nickname):
-    # Placeholder for the profile page
-    return render_template('profile.html', nickname=nickname)
+    if 'nickname' not in session or session['nickname'] != nickname:
+        return redirect(url_for('login'))
+
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (u:User {nickname: $nickname})-[r:HAS_STATUS]->(b:Book)
+            RETURN b.name AS book_name, b.image_url AS image_url, r.status AS status
+        """, nickname=nickname)
+        
+        books = {
+            "want_to_read": [],
+            "reading": [],
+            "read": []
+        }
+        
+        for record in result:
+            book = {
+                "name": record["book_name"],
+                "image_url": record["image_url"]
+            }
+            books[record["status"]].append(book)
+
+    return render_template('profile.html', books=books, nickname=nickname)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -90,7 +106,6 @@ def register():
                 flash('Registration successful! Please log in.', 'success')
                 return redirect(url_for('login'))
     return render_template('register.html', form=form)
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -109,27 +124,47 @@ def login():
             else:
                 flash('Invalid nickname or password. Please try again.', 'danger')
     return render_template('login.html', form=form)
-
 @app.route('/logout')
 def logout():
     session.pop('nickname', None)
     session.pop('role', None)
     flash('You have been logged out.', 'success')
     return redirect(url_for('index'))
-
 def create_genre():
     """Creates a fixed set of genres in the database."""
     with driver.session() as db_session:
-        genres = ["Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller"]
+        genres = ["Fiction", "Non-Fiction", "Science Fiction", "Fantasy", "Mystery", "Thriller",
+                  "Romance", "Horror", "Classic", "Biography", "Autobiography", "Self-Help",
+                  "Philosophy", "Epic-fantasy", "Historical-fiction", "Young-adult", "Children",
+                  "Dystopian", "Adventure", "Crime", "Short-stories", "Dark-fantasy", "Paranormal",
+                  "Magic", "Adult", "LGBQT", "Gothic"]
         for genre in genres:
             db_session.run("MERGE (g:Genre {name: $name})", name=genre)
+    return "Genres created successfully!"
 
 def upload_image(file=None):
     """Uploads an image to Cloudinary, resizes it to 684x100, and returns the URL."""
     if file:
-        result = cloudinary.uploader.upload(file, transformation={"width": 684, "height": 100, "crop": "limit"})
+        result = cloudinary.uploader.upload(file, transformation={"width": 400, "height": 600, "scale": "limit"})
         return result.get("url")
     return None
+
+@app.route('/update_book_status/<book_name>', methods=['POST'])
+def update_book_status(book_name):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    status = request.form.get('status')
+    user_nickname = session['nickname']
+
+    with driver.session() as db_session:
+        db_session.run("""
+            MATCH (u:User {nickname: $user_nickname}), (b:Book {name: $book_name})
+            MERGE (u)-[r:HAS_STATUS]->(b)
+            SET r.status = $status
+        """, user_nickname=user_nickname, book_name=book_name, status=status)
+
+    return redirect(url_for('book_detail', book_name=book_name))
 
 def create_author_book_relationship_with_genres(author_name, author_surname, book_data, genres):
     """Creates a book, author, and genre nodes with relationships."""
@@ -149,9 +184,16 @@ def create_author_book_relationship_with_genres(author_name, author_surname, boo
                     image_url=book_data["image_url"], genres=genres)
 
 @app.route('/create_book', methods=['GET', 'POST'])
-@roles_required('author', 'admin')
+@roles_required('admin')
 def create_book():
     form = CreateBookForm()
+
+    # Get genres from database for the form
+    with driver.session() as db_session:
+        result = db_session.run("MATCH (g:Genre) RETURN g.name AS name")
+        genres = [(record["name"], record["name"]) for record in result]
+        form.genres.choices = genres
+
     if form.validate_on_submit():
         name = form.name.data
         description = form.description.data
@@ -179,12 +221,7 @@ def create_book():
 
         return redirect(url_for('index'))
 
-    # Get genres from database for the form
-    with driver.session() as db_session:
-        result = db_session.run("MATCH (g:Genre) RETURN g.name AS name")
-        genres = [record["name"] for record in result]
-    
-    return render_template('create_book.html', form=form, genres=genres)
+    return render_template('create_book.html', form=form)
 
 # Route for listing books
 @app.route('/books')
@@ -204,6 +241,32 @@ def list_books():
             for record in result
         ]
     return render_template('list_books.html', books=books)
+
+@app.route('/book/<book_name>')
+def book_detail(book_name):
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (b:Book {name: $book_name})-[:WROTE]-(a:Author)
+            OPTIONAL MATCH (b)-[:BELONGS_TO]->(g:Genre)
+            RETURN b.name AS book_name, b.description AS description, b.pages AS pages, 
+                   b.datePublished AS datePublished, b.image_url AS image_url, 
+                   a.name AS author_name, a.surname AS author_surname, 
+                   collect(g.name) AS genres
+        """, book_name=book_name)
+        book = result.single()
+        if book:
+            book_data = {
+                "name": book["book_name"],
+                "description": book["description"],
+                "pages": book["pages"],
+                "datePublished": book["datePublished"],
+                "image_url": book["image_url"],
+                "author": f"{book['author_name']} {book['author_surname']}",
+                "genres": book["genres"]
+            }
+        else:
+            abort(404)
+    return render_template('book_detail.html', book=book_data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
