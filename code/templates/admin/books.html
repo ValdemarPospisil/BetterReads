@@ -1,0 +1,38 @@
+{% extends "template.html" %}
+{% block subtitle %}Manage Books{% endblock %}
+{% block main %}
+<main>
+    <section id="book-list">
+        <h2>Manage Books</h2>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Book Name</th>
+                    <th>Author</th>
+                    <th>Users with Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <td>{{ book.name }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>
+                        {% for user in book.users %}
+                            {{ user.nickname }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('book_detail', book_name=book.name) }}">View Details</a>
+                        <form method="POST" action="{{ url_for('delete_book', book_name=book.name) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</main>
+{% endblock %}

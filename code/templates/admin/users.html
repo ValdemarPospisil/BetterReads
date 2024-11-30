@@ -1,0 +1,44 @@
+{% extends "template.html" %}
+{% block subtitle %}Manage Users{% endblock %}
+{% block main %}
+<main>
+    <section id="user-list">
+        <h2>Registered Users</h2>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Nickname</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.nickname }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <a href="{{ url_for('profile', nickname=user.nickname) }}">View Profile</a>
+                        <form method="POST" action="{{ url_for('delete_user', nickname=user.nickname) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('import_users') }}">
+        <div class="form-group">
+            <label for="file">Upload JSON File</label>
+            <input type="file" name="file" id="file" class="form-control">
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Import Users</button>
+        </div>
+    </form>
+</main>
+{% endblock %}

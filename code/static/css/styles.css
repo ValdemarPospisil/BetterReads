@@ -50,7 +50,7 @@ body {
 
 /* Header Styles */
 .header {
-    background-color: var(--darker-primary);
+    background-color: var(--primary);
     padding: 20px 0;
 }
 
@@ -95,28 +95,46 @@ body {
 .nav-link:hover {
     color: var(--cyan);
 }
+/* User Info Styles */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
 
+.profile-picture img {
+    max-width: 150px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+}
+
+.user-details p {
+    margin: 5px 0;
+}
 
 /* Book List Styles */
 .book-list {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    padding: 0 20px;
-    column-gap: 30px;
-    row-gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    padding: 0 15px;
+    column-gap: 15px;
+    row-gap: 15px;
     justify-items: center;
 }
 
 .book-card {
     background-color: var(--primary);
-    padding: 15px;
+    padding: 10px; /* Reduce padding */
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     text-align: center;
     width: 100%;
-    max-width: 200px;
+    max-width: 125px; /* Reduce max-width */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     margin: 10px; /* Add margin between book cards */
+    text-decoration: none; /* Remove underline */
+    color: inherit; /* Inherit text color */
 }
 
 .book-card:hover {
@@ -219,6 +237,42 @@ body {
     color: var(--cyan);
 }
 
+/* User Table Styles */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 18px;
+    text-align: left;
+}
+
+.user-table th, .user-table td {
+    padding: 12px 15px;
+    border: 1px solid var(--border);
+}
+
+.user-table th {
+    background-color: var(--primary);
+    color: var(--foreground);
+}
+
+.user-table tr:nth-child(even) {
+    background-color: var(--hover);
+}
+
+.user-table tr:hover {
+    background-color: var(--hover);
+}
+
+.user-table a {
+    color: var(--cyan);
+    text-decoration: none;
+}
+
+.user-table a:hover {
+    text-decoration: underline;
+}
+
 /* Footer Styles */
 footer {
     text-align: center;
@@ -226,7 +280,6 @@ footer {
     background-color: var(--primary);
     color: var(--foreground);
     border-top: 1px solid var(--border);
-    position: fixed;
-    bottom: 0;
+    margin-top: 20px; /* Add margin to separate from content */
     width: 100%;
 }

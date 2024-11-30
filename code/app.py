@@ -8,6 +8,7 @@ import cloudinary.api
 from neo4j import GraphDatabase
 import os
 from functools import wraps
+import json
 
 app = Flask(__name__)
 # Flask app setup
@@ -56,17 +57,58 @@ def roles_required(*roles):
 @app.route('/admin')
 @roles_required('admin')
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    users = []
+    with driver.session() as db_session:
+        result = db_session.run("MATCH (u:User) RETURN u.full_name AS full_name, u.nickname AS nickname, u.email AS email")
+        users = [{"full_name": record["full_name"], "nickname": record["nickname"], "email": record["email"]} for record in result]
+    return render_template('admin/admin_dashboard.html', users=users)
 
-@app.route('/profile/<nickname>')
+@app.route('/delete_user/<nickname>', methods=['POST'])
+@roles_required('admin')
+def delete_user(nickname):
+    with driver.session() as db_session:
+        db_session.run("MATCH (u:User {nickname: $nickname}) DETACH DELETE u", nickname=nickname)
+    flash(f'User {nickname} has been deleted.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/users')
+@roles_required('admin')
+def manage_users():
+    users = []
+    with driver.session() as db_session:
+        result = db_session.run("MATCH (u:User) RETURN u.full_name AS full_name, u.nickname AS nickname, u.email AS email")
+        users = [{"full_name": record["full_name"], "nickname": record["nickname"], "email": record["email"]} for record in result]
+    return render_template('admin/users.html', users=users)
+
+@app.route('/admin/books')
+@roles_required('admin')
+def manage_books():
+    books = []
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (b:Book)<-[:WROTE]-(a:Author)
+            OPTIONAL MATCH (u:User)-[:HAS_STATUS]->(b)
+            RETURN b.name AS name, a.name AS author, collect(u.nickname) AS users
+        """)
+        books = [{"name": record["name"], "author": record["author"], "users": [{"nickname": user} for user in record["users"]]} for record in result]
+    return render_template('admin/books.html', books=books)
+
+@app.route('/delete_book/<book_name>', methods=['POST'])
+@roles_required('admin')
+def delete_book(book_name):
+    with driver.session() as db_session:
+        db_session.run("MATCH (b:Book {name: $book_name}) DETACH DELETE b", book_name=book_name)
+    flash(f'Book {book_name} has been deleted.', 'success')
+    return redirect(url_for('manage_books'))
+
+@app.route('/profile/<nickname>', methods=['GET', 'POST'])
 def profile(nickname):
-    if 'nickname' not in session or session['nickname'] != nickname:
-        return redirect(url_for('login'))
-
+    user_data = {}
     with driver.session() as db_session:
         result = db_session.run("""
             MATCH (u:User {nickname: $nickname})-[r:HAS_STATUS]->(b:Book)
-            RETURN b.name AS book_name, b.image_url AS image_url, r.status AS status
+            RETURN u.full_name AS full_name, u.email AS email, u.profile_picture AS profile_picture, u.bio AS bio,
+                   b.name AS book_name, b.image_url AS image_url, r.status AS status
         """, nickname=nickname)
         
         books = {
@@ -76,13 +118,70 @@ def profile(nickname):
         }
         
         for record in result:
+            if not user_data:
+                user_data = {
+                    "full_name": record["full_name"],
+                    "email": record["email"],
+                    "profile_picture": record["profile_picture"],
+                    "bio": record["bio"]
+                }
             book = {
                 "name": record["book_name"],
                 "image_url": record["image_url"]
             }
             books[record["status"]].append(book)
 
-    return render_template('profile.html', books=books, nickname=nickname)
+    if 'nickname' in session and session['nickname'] == nickname:
+        if request.method == 'POST':
+            bio = request.form.get('bio')
+            profile_picture = request.files.get('profile_picture')
+            profile_picture_url = user_data['profile_picture']
+
+            if profile_picture:
+                upload_result = cloudinary.uploader.upload(profile_picture)
+                profile_picture_url = upload_result['secure_url']
+
+            with driver.session() as db_session:
+                db_session.run("""
+                    MATCH (u:User {nickname: $nickname})
+                    SET u.bio = $bio, u.profile_picture = $profile_picture
+                """, nickname=nickname, bio=bio, profile_picture=profile_picture_url)
+
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('profile', nickname=nickname))
+
+        return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=True)
+    else:
+        return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=False)
+
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    nickname = session['nickname']
+    bio = request.form.get('bio')
+    profile_picture = request.files.get('profile_picture')
+    profile_picture_url = None
+
+    if profile_picture:
+        upload_result = cloudinary.uploader.upload(profile_picture)
+        profile_picture_url = upload_result['secure_url']
+
+    with driver.session() as db_session:
+        if profile_picture_url:
+            db_session.run("""
+                MATCH (u:User {nickname: $nickname})
+                SET u.bio = $bio, u.profile_picture = $profile_picture
+            """, nickname=nickname, bio=bio, profile_picture=profile_picture_url)
+        else:
+            db_session.run("""
+                MATCH (u:User {nickname: $nickname})
+                SET u.bio = $bio
+            """, nickname=nickname, bio=bio)
+
+    flash('Profile updated successfully!', 'success')
+    return redirect(url_for('profile', nickname=nickname))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -267,6 +366,39 @@ def book_detail(book_name):
         else:
             abort(404)
     return render_template('book_detail.html', book=book_data)
+
+
+@app.route('/import_users', methods=['POST'])
+def import_users():
+    if 'nickname' not in session or session['role'] != 'admin':
+        return redirect(url_for('login'))
+
+    file = request.files['file']
+    if not file:
+        flash('No file selected.', 'danger')
+        return redirect(url_for('admin_dashboard'))
+
+    users = json.load(file)
+
+    with driver.session() as db_session:
+        for user in users:
+            full_name = user['full_name']
+            nickname = user['nickname']
+            email = user['email']
+            password = generate_password_hash(user['password'])
+            role = "user"
+
+            result = db_session.run("MATCH (u:User {nickname: $nickname}) RETURN u", nickname=nickname)
+            if result.single():
+                flash(f"Nickname {nickname} already exists. Skipping user.", 'warning')
+            else:
+                db_session.run(
+                    "CREATE (u:User {full_name: $full_name, nickname: $nickname, email: $email, password: $password, role: $role})",
+                    full_name=full_name, nickname=nickname, email=email, password=password, role=role
+                )
+                flash(f"User {nickname} registered successfully.", 'success')
+
+    return redirect(url_for('admin_dashboard'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

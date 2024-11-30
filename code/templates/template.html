@@ -15,13 +15,17 @@
                 <ul class="nav-list">
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('create_book') }}">Add Book</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('list_books') }}">Books</a></li>
-                    <li class="nav-item">
-                        {% if 'nickname' in session %}
-                        <a class="nav-link" href="{{ url_for('profile', nickname=session['nickname']) }}">{{ session['nickname'] }}</a>
-                        {% else %}
-                        <a class="nav-link" href="{{ url_for('login') }}">Sign in</a>
+                    {% if 'nickname' in session %}
+                        {% if session['role'] == 'admin' %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_books') }}">Manage Books</a></li>
                         {% endif %}
-                    </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('profile', nickname=session['nickname']) }}">{{ session['nickname'] }}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Sign in</a></li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>

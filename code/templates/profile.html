@@ -3,20 +3,54 @@
 {% block main %}
 <div class="container">
     <h1>{{ nickname }}'s Profile</h1>
+    <div class="user-info">
+        <div class="profile-picture">
+            {% if user.profile_picture %}
+                <img src="{{ user.profile_picture }}" alt="{{ nickname }}">
+            {% else %}
+                <img src="/static/imgs/default_profile.jpg" alt="Default Profile Picture">
+            {% endif %}
+        </div>
+        <div class="user-details">
+            <p><strong>Nickname:</strong> {{ nickname }}</p>
+            <p><strong>Full Name:</strong> {{ user.full_name }}</p>
+            <p><strong>Bio:</strong> {{ user.bio }}</p>
+            {% if editable %}
+                <p><strong>Email:</strong> {{ user.email }}</p>
+            {% endif %}
+        </div>
+    </div>
+    {% if editable %}
+    <div class="update-profile">
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('update_profile') }}">
+            <div class="form-group">
+                <label for="profile_picture">Upload Profile Picture</label>
+                <input type="file" name="profile_picture" id="profile_picture" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="bio">Update Bio</label>
+                <textarea name="bio" id="bio" class="form-control">{{ user.bio }}</textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
     <div class="book-status-columns">
         <div class="book-status-column">
             <h2>Want to Read</h2>
             {% if books.want_to_read %}
                 <div class="book-list">
                     {% for book in books.want_to_read %}
-                        <div class="book-card">
+                    <a href="{{ url_for('book_detail', book_name=book.name) }}" class="book-card">
                             {% if book.image_url %}
                                 <img src="{{ book.image_url }}" alt="{{ book.name }}">
                             {% else %}
                                 <img src="/static/default_book.png" alt="Default Book">
                             {% endif %}
                             <h3>{{ book.name }}</h3>
-                        </div>
+                    </a>
                     {% endfor %}
                 </div>
             {% else %}
@@ -28,14 +62,14 @@
             {% if books.reading %}
                 <div class="book-list">
                     {% for book in books.reading %}
-                        <div class="book-card">
+                    <a href="{{ url_for('book_detail', book_name=book.name) }}" class="book-card">
                             {% if book.image_url %}
                                 <img src="{{ book.image_url }}" alt="{{ book.name }}">
                             {% else %}
                                 <img src="/static/default_book.png" alt="Default Book">
                             {% endif %}
                             <h3>{{ book.name }}</h3>
-                        </div>
+                    </a>
                     {% endfor %}
                 </div>
             {% else %}
@@ -47,14 +81,14 @@
             {% if books.read %}
                 <div class="book-list">
                     {% for book in books.read %}
-                        <div class="book-card">
+                    <a href="{{ url_for('book_detail', book_name=book.name) }}" class="book-card">
                             {% if book.image_url %}
                                 <img src="{{ book.image_url }}" alt="{{ book.name }}">
                             {% else %}
                                 <img src="/static/default_book.png" alt="Default Book">
                             {% endif %}
                             <h3>{{ book.name }}</h3>
-                        </div>
+                    </a>
                     {% endfor %}
                 </div>
             {% else %}

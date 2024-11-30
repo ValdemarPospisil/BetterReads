@@ -1,0 +1,123 @@
+[
+    {
+      "nickname": "BookWorm123",
+      "full_name": "Anna Collins",
+      "email": "anna.collins@example.com",
+      "password": "readingRocks!"
+    },
+    {
+      "nickname": "LitLover",
+      "full_name": "Brian Walker",
+      "email": "brian.walker@example.com",
+      "password": "fictionFan"
+    },
+    {
+      "nickname": "ChapterAddict",
+      "full_name": "Chloe Adams",
+      "email": "chloe.adams@example.com",
+      "password": "chapter4life"
+    },
+    {
+      "nickname": "HardcoverHero",
+      "full_name": "Dylan Perez",
+      "email": "dylan.perez@example.com",
+      "password": "password123"
+    },
+    {
+      "nickname": "PaperbackPro",
+      "full_name": "Emily Torres",
+      "email": "emily.torres@example.com",
+      "password": "securePass"
+    },
+    {
+      "nickname": "PlotTwist",
+      "full_name": "Frank White",
+      "email": "frank.white@example.com",
+      "password": "twistAndTurn"
+    },
+    {
+      "nickname": "ProloguePrincess",
+      "full_name": "Grace Evans",
+      "email": "grace.evans@example.com",
+      "password": "bookishQueen"
+    },
+    {
+      "nickname": "EpilogueExpert",
+      "full_name": "Henry Hall",
+      "email": "henry.hall@example.com",
+      "password": "endingMaster"
+    },
+    {
+      "nickname": "FictionFanatic",
+      "full_name": "Isabella Scott",
+      "email": "isabella.scott@example.com",
+      "password": "fictionRules"
+    },
+    {
+      "nickname": "PageMaster",
+      "full_name": "Jack Martinez",
+      "email": "jack.martinez@example.com",
+      "password": "turnThePage"
+    },
+    {
+      "nickname": "BlurbBoss",
+      "full_name": "Kaitlyn Baker",
+      "email": "kaitlyn.baker@example.com",
+      "password": "blurbKing"
+    },
+    {
+      "nickname": "VerseVanguard",
+      "full_name": "Liam Harris",
+      "email": "liam.harris@example.com",
+      "password": "poetryLover"
+    },
+    {
+      "nickname": "NovelNerd",
+      "full_name": "Mia Nelson",
+      "email": "mia.nelson@example.com",
+      "password": "novelsForLife"
+    },
+    {
+      "nickname": "ShortStoryStar",
+      "full_name": "Noah Carter",
+      "email": "noah.carter@example.com",
+      "password": "shortAndSweet"
+    },
+    {
+      "nickname": "LibraryLion",
+      "full_name": "Olivia Young",
+      "email": "olivia.young@example.com",
+      "password": "roarRead"
+    },
+    {
+      "nickname": "ShelfieQueen",
+      "full_name": "Sophia King",
+      "email": "sophia.king@example.com",
+      "password": "bookshelfLove"
+    },
+    {
+      "nickname": "FolioFan",
+      "full_name": "Ethan Wright",
+      "email": "ethan.wright@example.com",
+      "password": "folioMaster"
+    },
+    {
+      "nickname": "GenreGuru",
+      "full_name": "Amelia Harris",
+      "email": "amelia.harris@example.com",
+      "password": "loveGenres"
+    },
+    {
+      "nickname": "BookmarkBoss",
+      "full_name": "Lucas Green",
+      "email": "lucas.green@example.com",
+      "password": "keepReading"
+    },
+    {
+      "nickname": "SpineSaver",
+      "full_name": "Zoe Roberts",
+      "email": "zoe.roberts@example.com",
+      "password": "saveTheBooks"
+    }
+  ]
+  
