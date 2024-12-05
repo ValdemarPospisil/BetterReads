@@ -36,6 +36,12 @@
             </div>
         </form>
     </div>
+    {% else %}
+        {% if not is_friend %}
+        <form method="POST" action="{{ url_for('send_friend_request', nickname=nickname) }}">
+            <button type="submit" class="btn btn-primary">Send Friend Request</button>
+        </form>
+        {% endif %}
     {% endif %}
     <div class="book-status-columns">
         <div class="book-status-column">

@@ -2,6 +2,15 @@
 {% block subtitle %}Books{% endblock %}
 {% block main %}
 <div class="container">
+    <form method="get" action="{{ url_for('list_books') }}">
+        <label for="genre">Filter by Genre:</label>
+        <select name="genre" id="genre" onchange="this.form.submit()">
+            <option value="">All Genres</option>
+            {% for genre in genres %}
+                <option value="{{ genre }}" {% if genre == selected_genre %}selected{% endif %}>{{ genre }}</option>
+            {% endfor %}
+        </select>
+    </form>
     {% if books %}
         <div class="book-list">
             {% for book in books %}

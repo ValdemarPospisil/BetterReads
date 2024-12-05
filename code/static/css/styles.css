@@ -116,7 +116,7 @@ body {
 /* Book List Styles */
 .book-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
     padding: 0 15px;
     column-gap: 15px;
     row-gap: 15px;
@@ -129,8 +129,8 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     text-align: center;
-    width: 100%;
-    max-width: 125px; /* Reduce max-width */
+    width: 125%;
+    max-width: 150px; /* Reduce max-width */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     margin: 10px; /* Add margin between book cards */
     text-decoration: none; /* Remove underline */
@@ -270,6 +270,166 @@ body {
 }
 
 .user-table a:hover {
+    text-decoration: underline;
+}
+
+
+/* Review Section Styles */
+.review-section {
+    margin-top: 40px;
+}
+
+.review-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.review-form label {
+    font-weight: bold;
+    color: var(--foreground);
+}
+
+.review-form select,
+.review-form textarea {
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+.review-form .btn-submit-review {
+    background-color: var(--purple);
+    color: var(--foreground);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.review-form .btn-submit-review:hover {
+    background-color: var(--pink);
+}
+
+.reviews {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.review {
+    background-color: var(--primary);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.review p {
+    margin: 5px 0;
+    color: var(--foreground);
+}
+
+/* Custom styles for the dropdown */
+.nav-item.dropdown .dropdown-menu {
+    background-color: #fff; /* Change to your desired background color */
+    border: 1px solid #ccc; /* Change to your desired border color */
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.nav-item.dropdown .dropdown-item {
+    padding: 10px 20px;
+    color: #333; /* Change to your desired text color */
+    text-decoration: none;
+}
+
+.nav-item.dropdown .dropdown-item:hover {
+    background-color: #f8f9fa; /* Change to your desired hover background color */
+    color: #000; /* Change to your desired hover text color */
+}
+
+.nav-item.dropdown .dropdown-divider {
+    height: 1px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    background-color: #e9ecef; /* Change to your desired divider color */
+}
+
+/* Override Bootstrap's default navbar styles */
+.navbar {
+    background-color: var(--darker-primary) /* Change to your desired navbar background color */
+}
+
+.navbar .nav-link {
+    color: var(--background) /* Change to your desired navbar text color */
+}
+
+.navbar .nav-link:hover {
+    color: var(--hover); /* Change to your desired navbar hover text color */
+}
+
+/* Friend List Styles */
+.friend-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+    padding: 0 15px;
+    column-gap: 15px;
+    row-gap: 15px;
+    justify-items: center;
+}
+
+.friend-card {
+    background-color: var(--primary);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 125%;
+    max-width: 150px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 10px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.friend-card:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 12px 16px rgba(0, 0, 0, 0.4);
+}
+
+.friend-picture img {
+    max-width: 100%;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    border: 2px solid var(--border);
+}
+
+.friend-details h3 {
+    margin: 10px 0;
+    color: var(--foreground);
+    text-decoration: none;
+    text-align: center;
+}
+
+.friend-details p {
+    font-size: 12px;
+    color: var(--foreground);
+    text-decoration: none;
+}
+
+/* Genre Link Styles */
+.genre-link {
+    color: var(--pink);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.genre-link:hover {
+    color: var(--cyan);
     text-decoration: underline;
 }
 

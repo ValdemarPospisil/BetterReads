@@ -1,0 +1,20 @@
+{% extends "template.html" %}
+{% block subtitle %}Notifications{% endblock %}
+{% block main %}
+<div class="container">
+    <h1>Notifications</h1>
+    <ul class="list-group">
+        {% for notification in notifications %}
+            <li class="list-group-item">
+                {% if notification.type == 'friend_request' %}
+                    <p>{{ notification.sender }} sent you a friend request.</p>
+                    <form method="POST" action="{{ url_for('accept_friend_request', nickname=notification.sender) }}">
+                        <button type="submit" class="btn btn-success">Accept</button>
+                    </form>
+                {% endif %}
+                <small>{{ notification.timestamp }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

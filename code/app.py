@@ -9,6 +9,8 @@ from neo4j import GraphDatabase
 import os
 from functools import wraps
 import json
+from datetime import datetime
+
 
 app = Flask(__name__)
 # Flask app setup
@@ -32,6 +34,7 @@ NEO4J_USER = "neo4j"
 NEO4J_PASSWORD = "PassatGolf"
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+
 
 @app.route('/home')
 @app.route('/index')
@@ -104,6 +107,7 @@ def delete_book(book_name):
 @app.route('/profile/<nickname>', methods=['GET', 'POST'])
 def profile(nickname):
     user_data = {}
+    is_friend = False
     with driver.session() as db_session:
         result = db_session.run("""
             MATCH (u:User {nickname: $nickname})-[r:HAS_STATUS]->(b:Book)
@@ -131,6 +135,13 @@ def profile(nickname):
             }
             books[record["status"]].append(book)
 
+        if 'nickname' in session and session['nickname'] != nickname:
+            friend_check = db_session.run("""
+                MATCH (u:User {nickname: $current_nickname})-[:FRIEND]->(f:User {nickname: $profile_nickname})
+                RETURN f
+            """, current_nickname=session['nickname'], profile_nickname=nickname)
+            is_friend = friend_check.single() is not None
+
     if 'nickname' in session and session['nickname'] == nickname:
         if request.method == 'POST':
             bio = request.form.get('bio')
@@ -152,7 +163,7 @@ def profile(nickname):
 
         return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=True)
     else:
-        return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=False)
+        return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=False, is_friend=is_friend)
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
@@ -205,6 +216,7 @@ def register():
                 flash('Registration successful! Please log in.', 'success')
                 return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -223,12 +235,14 @@ def login():
             else:
                 flash('Invalid nickname or password. Please try again.', 'danger')
     return render_template('login.html', form=form)
+
 @app.route('/logout')
 def logout():
     session.pop('nickname', None)
     session.pop('role', None)
     flash('You have been logged out.', 'success')
     return redirect(url_for('index'))
+
 def create_genre():
     """Creates a fixed set of genres in the database."""
     with driver.session() as db_session:
@@ -322,15 +336,21 @@ def create_book():
 
     return render_template('create_book.html', form=form)
 
-# Route for listing books
 @app.route('/books')
 def list_books():
+    genre_filter = request.args.get('genre')
     with driver.session() as db_session:
-        # Query to retrieve all books along with their authors
-        result = db_session.run("""
-            MATCH (b:Book)-[:WROTE]-(a:Author)
-            RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
-        """)
+        if genre_filter:
+            result = db_session.run("""
+                MATCH (b:Book)-[:BELONGS_TO]->(g:Genre {name: $genre})
+                MATCH (b)<-[:WROTE]-(a:Author)
+                RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
+            """, genre=genre_filter)
+        else:
+            result = db_session.run("""
+                MATCH (b:Book)<-[:WROTE]-(a:Author)
+                RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
+            """)
         books = [
             {
                 "name": record["book_name"],
@@ -339,7 +359,11 @@ def list_books():
             }
             for record in result
         ]
-    return render_template('list_books.html', books=books)
+
+        genres_result = db_session.run("MATCH (g:Genre) RETURN g.name AS name")
+        genres = [record["name"] for record in genres_result]
+
+    return render_template('list_books.html', books=books, genres=genres, selected_genre=genre_filter)
 
 @app.route('/book/<book_name>')
 def book_detail(book_name):
@@ -347,10 +371,11 @@ def book_detail(book_name):
         result = db_session.run("""
             MATCH (b:Book {name: $book_name})-[:WROTE]-(a:Author)
             OPTIONAL MATCH (b)-[:BELONGS_TO]->(g:Genre)
+            OPTIONAL MATCH (u:User)-[r:REVIEWED]->(b)
             RETURN b.name AS book_name, b.description AS description, b.pages AS pages, 
                    b.datePublished AS datePublished, b.image_url AS image_url, 
                    a.name AS author_name, a.surname AS author_surname, 
-                   collect(g.name) AS genres
+                   collect(DISTINCT g.name) AS genres, collect(DISTINCT {user: u.nickname, rating: r.rating, text: r.text}) AS reviews
         """, book_name=book_name)
         book = result.single()
         if book:
@@ -361,12 +386,38 @@ def book_detail(book_name):
                 "datePublished": book["datePublished"],
                 "image_url": book["image_url"],
                 "author": f"{book['author_name']} {book['author_surname']}",
-                "genres": book["genres"]
+                "genres": book["genres"],
+                "reviews": book["reviews"]
             }
         else:
             abort(404)
     return render_template('book_detail.html', book=book_data)
 
+@app.route('/submit_review/<book_name>', methods=['POST'])
+def submit_review(book_name):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    rating = int(request.form.get('rating'))
+    review_text = request.form.get('review')
+    user_nickname = session['nickname']
+
+    with driver.session() as db_session:
+        # Create the review relationship
+        db_session.run("""
+            MATCH (u:User {nickname: $user_nickname}), (b:Book {name: $book_name})
+            CREATE (u)-[:REVIEWED {rating: $rating, text: $review_text}]->(b)
+        """, user_nickname=user_nickname, book_name=book_name, rating=rating, review_text=review_text)
+
+        # Update the book status to "Read" if not already
+        db_session.run("""
+            MATCH (u:User {nickname: $user_nickname}), (b:Book {name: $book_name})
+            MERGE (u)-[r:HAS_STATUS]->(b)
+            ON CREATE SET r.status = 'read'
+            ON MATCH SET r.status = CASE WHEN r.status = 'read' THEN r.status ELSE 'read' END
+        """, user_nickname=user_nickname, book_name=book_name)
+
+    return redirect(url_for('book_detail', book_name=book_name))
 
 @app.route('/import_users', methods=['POST'])
 def import_users():
@@ -399,6 +450,101 @@ def import_users():
                 flash(f"User {nickname} registered successfully.", 'success')
 
     return redirect(url_for('admin_dashboard'))
+
+
+def create_friend_request_relationship():
+    """Creates the friend request and friendship relationships in the database."""
+    with driver.session() as db_session:
+        db_session.run("""
+            MATCH (u:User), (f:User)
+            WHERE u.nickname <> f.nickname
+            MERGE (u)-[:FRIEND_REQUEST]->(f)
+            MERGE (u)-[:FRIEND]->(f)
+        """)
+    return "Friend request and friendship relationships created successfully!"
+
+@app.route('/send_friend_request/<nickname>', methods=['POST'])
+def send_friend_request(nickname):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    sender_nickname = session['nickname']
+
+    with driver.session() as db_session:
+        friend_check = db_session.run("""
+            MATCH (sender:User {nickname: $sender_nickname})-[:FRIEND]->(receiver:User {nickname: $receiver_nickname})
+            RETURN receiver
+        """, sender_nickname=sender_nickname, receiver_nickname=nickname)
+        
+        if friend_check.single():
+            flash(f'You are already friends with {nickname}.', 'warning')
+            return redirect(url_for('profile', nickname=nickname))
+
+        db_session.run("""
+            MATCH (sender:User {nickname: $sender_nickname}), (receiver:User {nickname: $receiver_nickname})
+            MERGE (sender)-[:FRIEND_REQUEST]->(receiver)
+            CREATE (notification:Notification {type: 'friend_request', sender: $sender_nickname, receiver: $receiver_nickname, timestamp: $timestamp})
+            MERGE (receiver)-[:HAS_NOTIFICATION]->(notification)
+        """, sender_nickname=sender_nickname, receiver_nickname=nickname, timestamp=datetime.now().isoformat())
+
+    flash(f'Friend request sent to {nickname}.', 'success')
+    return redirect(url_for('profile', nickname=nickname))
+
+@app.route('/accept_friend_request/<nickname>', methods=['POST'])
+def accept_friend_request(nickname):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    receiver_nickname = session['nickname']
+
+    with driver.session() as db_session:
+        db_session.run("""
+            MATCH (sender:User {nickname: $sender_nickname})-[r:FRIEND_REQUEST]->(receiver:User {nickname: $receiver_nickname})
+            DELETE r
+            MERGE (sender)-[:FRIEND]->(receiver)
+            MERGE (receiver)-[:FRIEND]->(sender)
+            WITH receiver
+            MATCH (receiver)-[n:HAS_NOTIFICATION]->(notification:Notification {type: 'friend_request', sender: $sender_nickname})
+            DELETE n, notification
+        """, sender_nickname=nickname, receiver_nickname=receiver_nickname)
+
+    flash(f'Friend request from {nickname} accepted.', 'success')
+    return redirect(url_for('profile', nickname=receiver_nickname))
+
+@app.route('/friends')
+def friends():
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    nickname = session['nickname']
+    friends = []
+
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (u:User {nickname: $nickname})-[:FRIEND]->(f:User)
+            RETURN f.nickname AS nickname, f.full_name AS full_name, f.profile_picture AS profile_picture
+        """, nickname=nickname)
+        friends = [{"nickname": record["nickname"], "full_name": record["full_name"], "profile_picture": record["profile_picture"]} for record in result]
+
+    return render_template('friends.html', friends=friends)
+
+@app.route('/notifications')
+def notifications():
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    nickname = session['nickname']
+    notifications = []
+
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (u:User {nickname: $nickname})-[:HAS_NOTIFICATION]->(n:Notification)
+            RETURN n.type AS type, n.sender AS sender, n.timestamp AS timestamp
+        """, nickname=nickname)
+        notifications = [{"type": record["type"], "sender": record["sender"], "timestamp": record["timestamp"]} for record in result]
+
+    return render_template('notifications.html', notifications=notifications)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
