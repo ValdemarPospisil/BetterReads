@@ -15,12 +15,14 @@
                 <ul class="nav-list">
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('create_book') }}">Add Book</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('list_books') }}">Books</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('list_clubs') }}">Book Clubs</a></li>
                     {% if 'nickname' in session %}
                         {% if session['role'] == 'admin' %}
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Admin Dashboard</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_books') }}">Manage Books</a></li>
                         {% endif %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('create_club') }}">Create Book Club</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('notifications') }}">Notifications</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('friends') }}">Friends</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('profile', nickname=session['nickname']) }}">{{ session['nickname'] }}</a></li>

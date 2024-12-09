@@ -1,0 +1,34 @@
+{% extends "template.html" %}
+{% block subtitle %}Create Book Club{% endblock %}
+{% block head %}
+<link href="{{ url_for('static', filename='css/form_styles.css') }}" rel="stylesheet">
+{% endblock %}
+{% block main %}
+<div class="form-container">
+    <h1>Create a New Book Club</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.short_description.label }} {{ form.short_description(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.long_description.label }} {{ form.long_description(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.image.label }} {{ form.image(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.large_image.label }} {{ form.large_image(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.is_private.label }} {{ form.is_private(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

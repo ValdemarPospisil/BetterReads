@@ -1,0 +1,54 @@
+{% extends "template.html" %}
+{% block subtitle %}{{ club.name }}{% endblock %}
+{% block main %}
+<div class="container">
+    <div class="club-header">
+        <div class="club-large-image">
+            {% if club.large_image_url %}
+            <img src="{{ club.large_image_url }}" alt="{{ club.name }}">
+            {% else %}
+            <img src="/static/default_club_large.png" alt="Default Club Image">
+            {% endif %}
+        </div>
+        <div class="club-info">
+            <h1>{{ club.name }}</h1>
+            <p>{{ club.long_description }}</p>
+            <p><strong>Privacy:</strong> {{ club.is_private }}</p>
+            {% if 'nickname' in session %}
+                {% if not is_member %}
+                    <form method="POST" action="{{ url_for('join_club', club_name=club.name) }}">
+                        <button type="submit" class="btn btn-primary">Join Club</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Join Club</a>
+            {% endif %}
+        </div>
+    </div>
+    <h2>Members</h2>
+    <div class="member-list">
+        {% for member in club.members %}
+        <div class="member-card">
+            <a href="{{ url_for('profile', nickname=member.nickname) }}" class="member-link">
+                <div class="member-picture">
+                    {% if member.profile_picture %}
+                    <img src="{{ member.profile_picture }}" alt="{{ member.nickname }}">
+                    {% else %}
+                    <img src="/static/imgs/default_profile.jpg" alt="Default Profile Picture">
+                    {% endif %}
+                </div>
+                <div class="member-details">
+                    <h3>{{ member.nickname }}</h3>
+                    <p>{{ member.full_name }}</p>
+                </div>
+            </a>
+            {% if 'nickname' in session and is_owner and member.nickname != session['nickname'] %}
+            <form method="POST" action="{{ url_for('kick_member', club_name=club.name, member_nickname=member.nickname) }}" class="kick-form">
+                <button type="submit" class="btn btn-danger">Kick Out</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

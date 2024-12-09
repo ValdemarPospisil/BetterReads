@@ -433,6 +433,162 @@ body {
     text-decoration: underline;
 }
 
+/* Club List Styles */
+.club-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.club-card {
+    background-color: var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.club-card:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 12px 16px rgba(0, 0, 0, 0.4);
+}
+
+.club-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.club-details h3 {
+    margin: 10px 0;
+    color: var(--foreground);
+}
+
+.club-details p {
+    font-size: 14px;
+    color: var(--foreground);
+}
+
+/* Club Header Styles */
+.club-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.club-large-image img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.club-info {
+    text-align: center;
+    color: var(--foreground);
+}
+
+.club-info h1 {
+    margin-top: 10px;
+}
+
+.club-info p {
+    margin: 5px 0;
+}
+
+.member-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.member-card {
+    background-color: var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.member-card:hover {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 12px 16px rgba(0, 0, 0, 0.4);
+}
+
+.member-picture img {
+    max-width: 100%;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.member-details h3 {
+    margin: 10px 0;
+    color: var(--foreground);
+}
+
+.member-details p {
+    font-size: 14px;
+    color: var(--foreground);
+}
+
+/* Member Link Styles */
+.member-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.member-link:hover {
+    text-decoration: none;
+}
+
+.btn-danger {
+    background-color: var(--red);
+    color: var(--background);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-danger:hover {
+    background-color: var(--orange);
+}
+.kick-form {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.btn-danger {
+    background-color: var(--red);
+    color: var(--background);
+    border: none;
+    padding: 5px 10px; /* Smaller padding */
+    border-radius: 4px;
+    font-size: 14px; /* Smaller font size */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: var(--orange);
+}
+
+
+
 /* Footer Styles */
 footer {
     text-align: center;

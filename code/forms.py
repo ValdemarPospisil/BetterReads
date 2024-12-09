@@ -7,7 +7,6 @@ class RegistrationForm(FlaskForm):
     nickname = StringField('Nickname', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
     submit = SubmitField('Register')
 
@@ -27,3 +26,21 @@ class CreateBookForm(FlaskForm):
     genres = SelectMultipleField('Genres', validators=[DataRequired()])
     image = FileField('Book Image', validators=[DataRequired()])
     submit = SubmitField('Create Book')
+
+class CreateBookClubForm(FlaskForm):
+    name = StringField('Club Name', validators=[DataRequired()])
+    short_description = TextAreaField('Short Description', validators=[DataRequired()])
+    long_description = TextAreaField('Long Description', validators=[DataRequired()])
+    image = FileField('Club Image', validators=[DataRequired()])
+    large_image = FileField('Large Club Image', validators=[DataRequired()])
+    is_private = SelectField('Privacy', choices=[('public', 'Public'), ('private', 'Private')], validators=[DataRequired()])
+    submit = SubmitField('Create Club')
+
+class EditBookClubForm(FlaskForm):
+    name = StringField('Club Name', validators=[DataRequired()])
+    short_description = TextAreaField('Short Description', validators=[DataRequired()])
+    long_description = TextAreaField('Long Description', validators=[DataRequired()])
+    image = FileField('Club Image')
+    large_image = FileField('Large Club Image')
+    is_private = SelectField('Privacy', choices=[('public', 'Public'), ('private', 'Private')], validators=[DataRequired()])
+    submit = SubmitField('Update Club')

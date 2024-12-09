@@ -1,0 +1,51 @@
+[
+    {
+      "name": "The Cosmere Club",
+      "short_description": "Explore the interconnected worlds of Brandon Sanderson's epic universe.",
+      "long_description": "Welcome to The Cosmere Club! This is a space for fans of Brandon Sanderson's works, including *Mistborn*, *The Stormlight Archive*, *Warbreaker*, and beyond. Here, we dive deep into theories, character arcs, and the lore of the Cosmere. \n\n**Rules:**\n- Be respectful of differing opinions and theories.\n- No spoilers without a warning!\n- Discussions can include the books, adaptations, and Sanderson's other works.\n\nLet’s connect the threads of this incredible universe together. Keep your Shardblades ready and your metal reserves full!",
+      "is_private": false
+    },
+    {
+      "name": "Fantasy Femmes",
+      "short_description": "Celebrating fantasy books written by women.",
+      "long_description": "Fantasy Femmes is a space dedicated to celebrating the incredible fantasy worlds created by women writers. From Robin Hobb to N.K. Jemisin, we explore themes, characters, and groundbreaking ideas. \n\n**Rules:**\n1. Uplift and respect everyone’s thoughts.\n2. Discussions can include fantasy books written by women and similar adjacent themes.\n3. No negativity—keep it supportive and empowering.\n\nLet’s champion these magical voices together!",
+      "is_private": false
+    },
+    {
+      "name": "The Murder Mystery Club",
+      "short_description": "For sleuths obsessed with whodunits and thrillers.",
+      "long_description": "Step into the shoes of a detective! The Murder Mystery Club is for fans of classic and modern mysteries, thrillers, and suspense novels. From Agatha Christie’s Hercule Poirot to contemporary psychological thrillers, we analyze plots, trade theories, and solve fictional crimes. \n\n**Rules:**\n- No spoilers without marking them clearly!\n- Be kind while discussing theories.\n- Feel free to recommend books or adaptations.\n\nPut on your thinking caps, and let’s crack the case!",
+      "is_private": false
+    },
+    {
+      "name": "The Secret Tome Society",
+      "short_description": "A private haven for rare, niche, and hidden literary gems.",
+      "long_description": "Welcome to The Secret Tome Society, a private book club for those who love discovering underrated or forgotten books. Here, we focus on rare finds, indie authors, and hidden literary gems that deserve more attention.\n\n**Rules:**\n- Members can suggest books for monthly discussions.\n- Keep recommendations unique—popular bestsellers aren’t our focus.\n- Always respect others' opinions and provide constructive feedback.\n\nTogether, we’ll uncover stories that are truly one of a kind.",
+      "is_private": true
+    },
+    {
+      "name": "Post-Apocalyptic Readers",
+      "short_description": "Discuss dystopias, apocalyptic stories, and survival tales.",
+      "long_description": "Post-Apocalyptic Readers is the go-to place for fans of dystopian and post-apocalyptic fiction. From classics like *1984* and *The Road* to contemporary hits like *Station Eleven*, we discuss survival, societal collapse, and speculative futures. \n\n**Rules:**\n- Keep discussions relevant to the themes of dystopia and post-apocalyptic settings.\n- Respect everyone’s interpretations.\n- Feel free to share adaptation news or real-world parallels.\n\nLet’s survive together in this literary wasteland!",
+      "is_private": false
+    },
+    {
+      "name": "Spine-Chilling Stories",
+      "short_description": "For fans of horror, supernatural, and all things creepy.",
+      "long_description": "Do you love books that send shivers down your spine? Spine-Chilling Stories is the ultimate club for horror enthusiasts. From Stephen King’s classics to eerie indie novels, we discuss everything that goes bump in the night. \n\n**Rules:**\n- Share your scariest book experiences (no spoilers, please!).\n- Be open to discussing various subgenres of horror, from gothic to psychological.\n- Respect others’ tolerance levels for scares.\n\nJoin us if you dare!",
+      "is_private": false
+    },
+    {
+      "name": "Science Fiction Nexus",
+      "short_description": "Discuss futuristic worlds and cutting-edge ideas in sci-fi.",
+      "long_description": "Welcome to the Science Fiction Nexus, where we explore everything from space operas to hard sci-fi. Whether you’re a fan of Asimov, Le Guin, or Liu Cixin, this is the place to share theories, ideas, and love for futuristic storytelling. \n\n**Rules:**\n- Be respectful of different perspectives.\n- Discussions may include books, movies, and real-world scientific inspirations.\n- Keep an open mind and let your imagination soar!\n\nReady to boldly go where no reader has gone before?",
+      "is_private": false
+    },
+    {
+      "name": "Romance Realms",
+      "short_description": "From swoon-worthy contemporaries to epic historicals.",
+      "long_description": "Romance Realms is the place for readers who love swoon-worthy stories. Whether it’s a modern meet-cute or a sweeping historical epic, we dive into the romance genre’s best moments, characters, and tropes. \n\n**Rules:**\n- No genre shaming—this is a judgment-free zone!\n- Respect spoilers by clearly marking them.\n- Feel free to share fan art, adaptations, and your favorite ships.\n\nLet’s share the love!",
+      "is_private": false
+    }
+  ]
+  
