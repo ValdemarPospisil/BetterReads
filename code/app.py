@@ -10,6 +10,7 @@ import os
 from functools import wraps
 import json
 from datetime import datetime
+from flask_socketio import SocketIO, join_room, leave_room, send
 
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ app.config['UPLOAD_FOLDER'] = USER_IMG_FOLDER
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['SESSION_TYPE'] = 'filesystem'  # You can choose other session types as well
 Session(app)
+socketio = SocketIO(app)
 
 # Configuration       
 cloudinary.config( 
@@ -496,7 +498,7 @@ def accept_friend_request(nickname):
         """, sender_nickname=nickname, receiver_nickname=receiver_nickname)
 
     flash(f'Friend request from {nickname} accepted.', 'success')
-    return redirect(url_for('profile', nickname=receiver_nickname))
+    return redirect(url_for('notifications'))
 
 @app.route('/friends')
 def friends():
@@ -594,13 +596,14 @@ def book_club(club_name):
     members = []
     is_member = False
     is_owner = False
+    owner_nickname = None
     with driver.session() as db_session:
         result = db_session.run("""
             MATCH (club:BookClub {name: $club_name})
             OPTIONAL MATCH (club)<-[:MEMBER_OF]-(u:User)
             RETURN club.name AS name, club.short_description AS short_description, club.long_description AS long_description, 
                    club.image_url AS image_url, club.large_image_url AS large_image_url, club.is_private AS is_private, 
-                   collect({nickname: u.nickname, full_name: u.full_name, profile_picture: u.profile_picture}) AS members
+                   club.owner AS owner, collect({nickname: u.nickname, full_name: u.full_name, profile_picture: u.profile_picture}) AS members
         """, club_name=club_name)
         record = result.single()
         if record:
@@ -613,22 +616,13 @@ def book_club(club_name):
                 "is_private": record["is_private"],
                 "members": record["members"]
             }
+            owner_nickname = record["owner"]
             if 'nickname' in session:
-                user_nickname = session['nickname']
-                is_member_result = db_session.run("""
-                    MATCH (u:User {nickname: $user_nickname})-[:MEMBER_OF]->(club:BookClub {name: $club_name})
-                    RETURN u
-                """, user_nickname=user_nickname, club_name=club_name)
-                is_member = is_member_result.single() is not None
-
-                is_owner_result = db_session.run("""
-                    MATCH (u:User {nickname: $user_nickname})-[:OWNER_OF]->(club:BookClub {name: $club_name})
-                    RETURN u
-                """, user_nickname=user_nickname, club_name=club_name)
-                is_owner = is_owner_result.single() is not None
+                is_member = any(member['nickname'] == session['nickname'] for member in club_data['members'])
+                is_owner = session['nickname'] == owner_nickname
         else:
             abort(404)
-    return render_template('book_club.html', club=club_data, is_member=is_member, is_owner=is_owner)
+    return render_template('book_club.html', club=club_data, is_member=is_member, is_owner=is_owner, owner_nickname=owner_nickname)
 
 @app.route('/join_club/<club_name>', methods=['POST'])
 def join_club(club_name):
@@ -680,12 +674,26 @@ def join_club(club_name):
 
     return redirect(url_for('book_club', club_name=club_name))
 
+@app.route('/leave_club/<club_name>', methods=['POST'])
+def leave_club(club_name):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    user_nickname = session['nickname']
+
+    with driver.session() as db_session:
+        db_session.run("""
+            MATCH (u:User {nickname: $user_nickname})-[r:MEMBER_OF]->(club:BookClub {name: $club_name})
+            DELETE r
+        """, user_nickname=user_nickname, club_name=club_name)
+
+    flash('You have left the club.', 'success')
+    return redirect(url_for('book_club', club_name=club_name))
+
 @app.route('/accept_join_request/<nickname>', methods=['POST'])
 def accept_join_request(nickname):
     if 'nickname' not in session:
         return redirect(url_for('login'))
-
-    receiver_nickname = session['nickname']
 
     with driver.session() as db_session:
         # Find the club the user requested to join
@@ -706,15 +714,15 @@ def accept_join_request(nickname):
             DELETE r
             CREATE (sender)-[:MEMBER_OF]->(club)
         """, sender_nickname=nickname, club_name=club_name)
-
+        
         # Delete the notification
         db_session.run("""
-            MATCH (club:BookClub {name: $club_name})-[n:HAS_NOTIFICATION]->(notification:Notification {type: 'join_request', sender: $sender_nickname})
+            MATCH (receiver)-[n:HAS_NOTIFICATION]->(notification:Notification {type: 'join_request', sender: $sender_nickname})
             DELETE n, notification
         """, club_name=club_name, sender_nickname=nickname)
 
     flash(f'Join request from {nickname} accepted.', 'success')
-    return redirect(url_for('book_club', club_name=club_name))
+    return redirect(url_for('notifications'))
 
 @app.route('/edit_club/<club_name>', methods=['GET', 'POST'])
 def edit_club(club_name):
@@ -797,6 +805,62 @@ def kick_member(club_name, member_nickname):
 
     flash(f'{member_nickname} has been kicked out of the club.', 'success')
     return redirect(url_for('book_club', club_name=club_name))
+
+@app.route('/chat/<friend_nickname>')
+def private_chat(friend_nickname):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+    return render_template('private_chat.html', friend_nickname=friend_nickname)
+
+# Event handler for joining a private chat room
+@socketio.on('join_private')
+def on_join_private(data):
+    room = f'{session["nickname"]}_{data["friend_nickname"]}'
+    join_room(room)
+    send(f'{session["nickname"]} has joined the room.', to=room)
+
+# Event handler for leaving a private chat room
+@socketio.on('leave_private')
+def on_leave_private(data):
+    room = f'{session["nickname"]}_{data["friend_nickname"]}'
+    leave_room(room)
+    send(f'{session["nickname"]} has left the room.', to=room)
+
+# Event handler for handling private messages
+@socketio.on('private_message')
+def handle_private_message(data):
+    room = f'{session["nickname"]}_{data["friend_nickname"]}'
+    message = data['message']
+    timestamp = datetime.now().isoformat()
+    with driver.session() as db_session:
+        db_session.run("""
+            MATCH (u1:User {nickname: $nickname1}), (u2:User {nickname: $nickname2})
+            CREATE (m:Message {content: $message, timestamp: $timestamp})
+            CREATE (u1)-[:SENT]->(m)
+            CREATE (m)-[:TO]->(u2)
+        """, nickname1=session['nickname'], nickname2=data['friend_nickname'], message=message, timestamp=timestamp)
+    send({'nickname': session['nickname'], 'message': message, 'timestamp': timestamp}, to=room)
+
+@app.route('/chat_history/<friend_nickname>')
+def chat_history(friend_nickname):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    user_nickname = session['nickname']
+    messages = []
+
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (u1:User {nickname: $user_nickname})-[:SENT]->(m:Message)-[:TO]->(u2:User {nickname: $friend_nickname})
+            RETURN u1.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
+            UNION ALL
+            MATCH (u2:User {nickname: $friend_nickname})-[:SENT]->(m:Message)-[:TO]->(u1:User {nickname: $user_nickname})
+            RETURN u2.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
+            ORDER BY timestamp
+        """, user_nickname=user_nickname, friend_nickname=friend_nickname)
+        messages = [{"nickname": record["nickname"], "message": record["message"], "timestamp": record["timestamp"]} for record in result]
+
+    return {"messages": messages}
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

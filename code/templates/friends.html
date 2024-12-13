@@ -5,19 +5,22 @@
     <h1>Friends</h1>
     <div class="friend-list">
         {% for friend in friends %}
-        <a href="{{ url_for('profile', nickname=friend.nickname) }}" class="friend-card">
-            <div class="friend-picture">
-                {% if friend.profile_picture %}
-                <img src="{{ friend.profile_picture }}" alt="{{ friend.nickname }}">
-                {% else %}
-                <img src="/static/imgs/default_profile.jpg" alt="Default Profile Picture">
-                {% endif %}
-            </div>
-            <div class="friend-details">
-                <h3>{{ friend.nickname }}</h3>
-                <p>{{ friend.full_name }}</p>
-            </div>
-        </a>
+        <div class="friend-card">
+            <a href="{{ url_for('profile', nickname=friend.nickname) }}" class="friend-link">
+                <div class="friend-picture">
+                    {% if friend.profile_picture %}
+                    <img src="{{ friend.profile_picture }}" alt="{{ friend.nickname }}">
+                    {% else %}
+                    <img src="/static/imgs/default_profile.jpg" alt="Default Profile Picture">
+                    {% endif %}
+                </div>
+                <div class="friend-details">
+                    <h3>{{ friend.nickname }}</h3>
+                    <p>{{ friend.full_name }}</p>
+                </div>
+            </a>
+            <a href="{{ url_for('private_chat', friend_nickname=friend.nickname) }}" class="btn btn-primary" style="margin-top: 10px;">Chat</a>
+        </div>
         {% endfor %}
     </div>
 </div>

@@ -1,0 +1,64 @@
+{% extends "template.html" %}
+{% block subtitle %}Chat with {{ friend_nickname }}{% endblock %}
+{% block main %}
+<div class="container chat-page">
+    <h1 style="margin-bottom: 20px;">Chat with {{ friend_nickname }}</h1>
+    <div id="chat" class="chat-container"></div>
+    <div class="chat-input-container">
+        <input type="text" id="message" placeholder="Type a message..." class="chat-input">
+        <button id="send" class="btn btn-primary">Send</button>
+    </div>
+</div>
+{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        var socket = io();
+        var room = '{{ session["nickname"] }}_{{ friend_nickname }}';
+
+        socket.emit('join_private', { friend_nickname: '{{ friend_nickname }}' });
+
+        socket.on('message', function(data) {
+            if (data.nickname && data.message) {
+                var chat = document.getElementById('chat');
+                var message = document.createElement('div');
+                message.className = 'message';
+                message.textContent = data.nickname + ': ' + data.message;
+                chat.appendChild(message);
+            }
+        });
+
+        document.getElementById('send').onclick = function() {
+            sendMessage();
+        };
+
+        document.getElementById('message').onkeypress = function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        };
+
+        function sendMessage() {
+            var message = document.getElementById('message').value;
+            if (message.trim() !== '') {
+                socket.emit('private_message', { friend_nickname: '{{ friend_nickname }}', message: message });
+                document.getElementById('message').value = '';
+            }
+        }
+
+        // Load chat history
+        fetch(`/chat_history/{{ friend_nickname }}`)
+            .then(response => response.json())
+            .then(data => {
+                var chat = document.getElementById('chat');
+                data.messages.forEach(msg => {
+                    var message = document.createElement('div');
+                    message.className = 'message';
+                    message.textContent = msg.nickname + ': ' + msg.message;
+                    chat.appendChild(message);
+                });
+            });
+    });
+</script>
+{% endblock %}

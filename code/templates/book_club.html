@@ -19,6 +19,10 @@
                     <form method="POST" action="{{ url_for('join_club', club_name=club.name) }}">
                         <button type="submit" class="btn btn-primary">Join Club</button>
                     </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('leave_club', club_name=club.name) }}">
+                        <button type="submit" class="btn btn-danger">Leave Club</button>
+                    </form>
                 {% endif %}
             {% else %}
                 <a href="{{ url_for('login') }}" class="btn btn-primary">Join Club</a>
@@ -42,6 +46,9 @@
                     <p>{{ member.full_name }}</p>
                 </div>
             </a>
+            {% if member.nickname == owner_nickname %}
+                <p><strong>Owner</strong></p>
+            {% endif %}
             {% if 'nickname' in session and is_owner and member.nickname != session['nickname'] %}
             <form method="POST" action="{{ url_for('kick_member', club_name=club.name, member_nickname=member.nickname) }}" class="kick-form">
                 <button type="submit" class="btn btn-danger">Kick Out</button>
