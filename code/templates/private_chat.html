@@ -1,11 +1,11 @@
 {% extends "template.html" %}
 {% block subtitle %}Chat with {{ friend_nickname }}{% endblock %}
 {% block main %}
-<div class="container chat-page">
+<div class="container chat-page" style="margin-top: 20px; margin-bottom: 20px;">
     <h1 style="margin-bottom: 20px;">Chat with {{ friend_nickname }}</h1>
     <div id="chat" class="chat-container"></div>
     <div class="chat-input-container">
-        <input type="text" id="message" placeholder="Type a message..." class="chat-input">
+        <input type="text" id="message" placeholder="Type a message..." class="chat-input" maxlength="200">
         <button id="send" class="btn btn-primary">Send</button>
     </div>
 </div>
@@ -24,8 +24,11 @@
                 var chat = document.getElementById('chat');
                 var message = document.createElement('div');
                 message.className = 'message';
-                message.textContent = data.nickname + ': ' + data.message;
+                var timestamp = new Date(data.timestamp).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+                var nicknameColor = data.nickname === '{{ session["nickname"] }}' ? 'pink' : 'cyan';
+                message.innerHTML = `[${timestamp}] <span style="color: ${nicknameColor};">${data.nickname}</span>: ${data.message}`;
                 chat.appendChild(message);
+                chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
             }
         });
 
@@ -55,9 +58,12 @@
                 data.messages.forEach(msg => {
                     var message = document.createElement('div');
                     message.className = 'message';
-                    message.textContent = msg.nickname + ': ' + msg.message;
+                    var timestamp = new Date(msg.timestamp).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+                    var nicknameColor = msg.nickname === '{{ session["nickname"] }}' ? 'pink' : 'cyan';
+                    message.innerHTML = `[${timestamp}] <span style="color: ${nicknameColor};">${msg.nickname}</span>: ${msg.message}`;
                     chat.appendChild(message);
                 });
+                chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
             });
     });
 </script>

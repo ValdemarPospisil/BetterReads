@@ -830,7 +830,7 @@ def on_leave_private(data):
 @socketio.on('private_message')
 def handle_private_message(data):
     room = f'{session["nickname"]}_{data["friend_nickname"]}'
-    message = data['message']
+    message = data['message'][:200]  # Limit message length to 200 characters
     timestamp = datetime.now().isoformat()
     with driver.session() as db_session:
         db_session.run("""
@@ -851,13 +851,18 @@ def chat_history(friend_nickname):
 
     with driver.session() as db_session:
         result = db_session.run("""
-            MATCH (u1:User {nickname: $user_nickname})-[:SENT]->(m:Message)-[:TO]->(u2:User {nickname: $friend_nickname})
-            RETURN u1.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
-            UNION ALL
-            MATCH (u2:User {nickname: $friend_nickname})-[:SENT]->(m:Message)-[:TO]->(u1:User {nickname: $user_nickname})
-            RETURN u2.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
-            ORDER BY timestamp
+        Call () {
+        MATCH (u1:User {nickname: $user_nickname})-[:SENT]->(m:Message)-[:TO]->(u2:User {nickname: $friend_nickname})
+                RETURN u1.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
+                UNION
+                MATCH (u2:User {nickname: $friend_nickname})-[:SENT]->(m:Message)-[:TO]->(u1:User {nickname: $user_nickname})
+                RETURN u2.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
+                
+        }
+        RETURN nickname, message, timestamp
+        ORDER BY timestamp
         """, user_nickname=user_nickname, friend_nickname=friend_nickname)
+
         messages = [{"nickname": record["nickname"], "message": record["message"], "timestamp": record["timestamp"]} for record in result]
 
     return {"messages": messages}

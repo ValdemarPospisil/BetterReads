@@ -588,11 +588,12 @@ body {
 }
 
 /* Chat Styles */
-/* Chat Styles */
 .chat-page {
     max-width: 900px;
-    margin: 0 auto;
+    margin: 20px auto; /* Add margin from header and footer */
     background-color: var(--primary);
+    padding: 20px; /* Add padding to the container */
+    border-radius: 8px;
 }
 
 .chat-container {
@@ -600,6 +601,7 @@ body {
     padding: 20px;
     border-radius: 8px;
     overflow-y: auto;
+    height: 400px; /* Fixed height for the container */
     margin-bottom: 20px;
 }
 
@@ -607,6 +609,7 @@ body {
     padding: 10px;
     border-bottom: 1px solid var(--border);
     color: var(--foreground);
+    word-wrap: break-word; /* Ensure long messages wrap */
 }
 
 .chat-input-container {
@@ -630,7 +633,7 @@ body {
     background-color: var(--purple);
     color: var(--foreground);
     border: none;
-    padding: 10px 20px;
+    padding: 10px 20px; /* Add padding to the button */
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
@@ -649,6 +652,7 @@ body {
     text-decoration: none;
     color: inherit;
 }
+
 
 /* Footer Styles */
 footer {
