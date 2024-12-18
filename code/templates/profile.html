@@ -41,8 +41,11 @@
         <form method="POST" action="{{ url_for('send_friend_request', nickname=nickname) }}">
             <button type="submit" class="btn btn-primary">Send Friend Request</button>
         </form>
+        {% else %}
+       <form method="POST" action="{{ url_for('private_chat', friend_nickname=nickname)}}">
+            <button type="submit" class="btn btn-primary">Chat</button>
+        </form>
         {% endif %}
-        <a href="{{ url_for('private_chat', friend_nickname=nickname) }}" class="btn btn-primary" style="margin-top: 10px;">Chat</a>
     {% endif %}
     <div class="book-status-columns">
         <div class="book-status-column">

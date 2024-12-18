@@ -15,20 +15,37 @@
             <p>{{ club.long_description }}</p>
             <p><strong>Privacy:</strong> {{ club.is_private }}</p>
             {% if 'nickname' in session %}
-                {% if not is_member %}
-                    <form method="POST" action="{{ url_for('join_club', club_name=club.name) }}">
-                        <button type="submit" class="btn btn-primary">Join Club</button>
-                    </form>
+                {% if is_owner %}
+                <form method="POST" action="{{ url_for('edit_club', club_name=club.name) }}">
+                    <button type="submit" class="btn btn-primary">Edit Club</button>
+                </form>    
                 {% else %}
-                    <form method="POST" action="{{ url_for('leave_club', club_name=club.name) }}">
-                        <button type="submit" class="btn btn-danger">Leave Club</button>
-                    </form>
+                    {% if not is_member %}
+                        <form method="POST" action="{{ url_for('join_club', club_name=club.name) }}">
+                            <button type="submit" class="btn btn-primary">Join Club</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('leave_club', club_name=club.name) }}">
+                            <button type="submit" class="btn btn-danger">Leave Club</button>
+                        </form>
+                    {% endif %}
                 {% endif %}
             {% else %}
                 <a href="{{ url_for('login') }}" class="btn btn-primary">Join Club</a>
             {% endif %}
         </div>
     </div>
+    {% if is_member %}
+    <h2>Group Chat</h2>
+    <div class="container chat-page">
+        <p class="chat-topic"><strong>Topic of Discussion:</strong> {{ club.topic }}</p>
+        <div id="chat" class="chat-container"></div>
+        <div class="chat-input-container">
+            <input type="text" id="message" placeholder="Type a message..." class="chat-input" maxlength="200">
+            <button id="send" class="btn btn-primary">Send</button>
+        </div>
+    </div>
+    {% endif %}
     <h2>Members</h2>
     <div class="member-list">
         {% for member in club.members %}
@@ -58,4 +75,62 @@
         {% endfor %}
     </div>
 </div>
+{% endblock %}
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        var socket = io();
+        var room = '{{ club.name }}';
+
+        socket.emit('join', { room: room });
+
+        socket.on('message', function(data) {
+            if (data.nickname && data.message) {
+                var chat = document.getElementById('chat');
+                var message = document.createElement('div');
+                message.className = 'message';
+                var timestamp = new Date(data.timestamp).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+                var nicknameColor = data.nickname === '{{ session["nickname"] }}' ? 'pink' : 'cyan';
+                message.innerHTML = `[${timestamp}] <span style="color: ${nicknameColor};">${data.nickname}</span>: ${data.message}`;
+                chat.appendChild(message);
+                chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
+            }
+        });
+
+        document.getElementById('send').onclick = function() {
+            sendMessage();
+        };
+
+        document.getElementById('message').onkeypress = function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        };
+
+        function sendMessage() {
+            var message = document.getElementById('message').value;
+            if (message.trim() !== '') {
+                socket.emit('group_message', { room: room, message: message });
+                document.getElementById('message').value = '';
+            }
+        }
+
+        // Load chat history
+        fetch(`/group_chat_history/{{ club.name }}`)
+            .then(response => response.json())
+            .then(data => {
+                var chat = document.getElementById('chat');
+                data.messages.forEach(msg => {
+                    var message = document.createElement('div');
+                    message.className = 'message';
+                    var timestamp = new Date(msg.timestamp).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+                    var nicknameColor = msg.nickname === '{{ session["nickname"] }}' ? 'pink' : 'cyan';
+                    message.innerHTML = `[${timestamp}] <span style="color: ${nicknameColor};">${msg.nickname}</span>: ${msg.message}`;
+                    chat.appendChild(message);
+                });
+                chat.scrollTop = chat.scrollHeight; // Scroll to the bottom
+            });
+    });
+</script>
 {% endblock %}

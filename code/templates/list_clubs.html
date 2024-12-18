@@ -3,7 +3,6 @@
 {% block main %}
 <div class="container">
     <h1>Book Clubs</h1>
-    <a href="{{ url_for('create_club') }}" class="btn btn-primary">Create Book Club</a>
     <div class="club-list">
         {% for club in clubs %}
         <a href="{{ url_for('book_club', club_name=club.name) }}" class="club-card">
@@ -23,4 +22,7 @@
         {% endfor %}
     </div>
 </div>
+    <form method="POST" action="{{ url_for('create_club') }}">
+        <button type="submit" class="btn btn-primary">Create Book Club</button>
+    </form>
 {% endblock %}

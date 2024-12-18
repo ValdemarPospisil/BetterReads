@@ -9,13 +9,13 @@
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            {{ form.name.label }} {{ form.name(class="form-control") }}
-        </div>
-        <div class="form-group">
             {{ form.short_description.label }} {{ form.short_description(class="form-control") }}
         </div>
         <div class="form-group">
             {{ form.long_description.label }} {{ form.long_description(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.topic.label }} {{ form.topic(class="form-control") }}
         </div>
         <div class="form-group">
             {{ form.image.label }} {{ form.image(class="form-control") }}
@@ -29,6 +29,9 @@
         <div class="form-group">
             <button type="submit" class="btn btn-primary">{{ form.submit.label.text }}</button>
         </div>
+    </form>
+    <form method="POST" action="{{ url_for('delete_club', club_name=club.name) }}">
+        <button type="submit" class="btn btn-danger">Delete Club</button>
     </form>
 </div>
 {% endblock %}

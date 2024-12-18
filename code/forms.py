@@ -37,9 +37,10 @@ class CreateBookClubForm(FlaskForm):
     submit = SubmitField('Create Club')
 
 class EditBookClubForm(FlaskForm):
-    name = StringField('Club Name', validators=[DataRequired()])
+    name = StringField('Club Name')
     short_description = TextAreaField('Short Description', validators=[DataRequired()])
     long_description = TextAreaField('Long Description', validators=[DataRequired()])
+    topic = StringField('Topic of Discussion')
     image = FileField('Club Image')
     large_image = FileField('Large Club Image')
     is_private = SelectField('Privacy', choices=[('public', 'Public'), ('private', 'Private')], validators=[DataRequired()])

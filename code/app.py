@@ -147,10 +147,7 @@ def profile(nickname):
             is_friend = friend_check.single() is not None
 
     if 'nickname' in session and session['nickname'] == nickname:
-        if request.method == 'POST':
-            # Handle profile update logic here
-            pass
-
+        
         return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=True)
     else:
         return render_template('profile.html', books=books, nickname=nickname, user=user_data, editable=False, is_friend=is_friend)
@@ -192,7 +189,7 @@ def register():
         nickname = form.nickname.data
         email = form.email.data
         password = generate_password_hash(form.password.data)
-        role = form.role.data  # Correct the typo here
+        role = form.role.data  
 
         with driver.session() as db_session:
             result = db_session.run("MATCH (u:User {nickname: $nickname}) RETURN u", nickname=nickname)
@@ -329,18 +326,33 @@ def create_book():
 @app.route('/books')
 def list_books():
     genre_filter = request.args.get('genre')
+    search_query = request.args.get('search')
     with driver.session() as db_session:
-        if genre_filter:
+        if genre_filter and search_query:
             result = db_session.run("""
-                MATCH (b:Book)-[:BELONGS_TO]->(g:Genre {name: $genre})
-                MATCH (b)<-[:WROTE]-(a:Author)
+                MATCH (b:Book)<-[:WROTE]-(a:Author)
+                WHERE (toLower(b.name) CONTAINS toLower($search_query) OR toLower(a.name) CONTAINS toLower($search_query) OR toLower(a.surname) CONTAINS toLower($search_query))
+                AND (b)-[:BELONGS_TO]->(:Genre {name: $genre_filter})
                 RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
-            """, genre=genre_filter)
+            """, search_query=search_query, genre_filter=genre_filter)
+        elif genre_filter:
+            result = db_session.run("""
+                MATCH (b:Book)<-[:WROTE]-(a:Author)
+                WHERE (b)-[:BELONGS_TO]->(:Genre {name: $genre_filter})
+                RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
+            """, genre_filter=genre_filter)
+        elif search_query:
+            result = db_session.run("""
+                MATCH (b:Book)<-[:WROTE]-(a:Author)
+                WHERE (toLower(b.name) CONTAINS toLower($search_query) OR toLower(a.name) CONTAINS toLower($search_query) OR toLower(a.surname) CONTAINS toLower($search_query))
+                RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
+            """, search_query=search_query)
         else:
             result = db_session.run("""
                 MATCH (b:Book)<-[:WROTE]-(a:Author)
                 RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
             """)
+
         books = [
             {
                 "name": record["book_name"],
@@ -353,7 +365,7 @@ def list_books():
         genres_result = db_session.run("MATCH (g:Genre) RETURN g.name AS name")
         genres = [record["name"] for record in genres_result]
 
-    return render_template('list_books.html', books=books, genres=genres, selected_genre=genre_filter)
+    return render_template('list_books.html', books=books, genres=genres, selected_genre=genre_filter, search_query=search_query)
 
 @app.route('/book/<book_name>')
 def book_detail(book_name):
@@ -406,6 +418,19 @@ def submit_review(book_name):
             ON CREATE SET r.status = 'read'
             ON MATCH SET r.status = CASE WHEN r.status = 'read' THEN r.status ELSE 'read' END
         """, user_nickname=user_nickname, book_name=book_name)
+
+        # Create a notification for all friends
+        friends = db_session.run("""
+            MATCH (u:User {nickname: $user_nickname})-[:FRIEND]->(f:User)
+            RETURN f.nickname AS friend_nickname
+        """, user_nickname=user_nickname)
+
+        for friend in friends:
+            friend_nickname = friend["friend_nickname"]
+            db_session.run("""
+                MATCH (u:User {nickname: $user_nickname}), (f:User {nickname: $friend_nickname}), (b:Book {name: $book_name})
+                CREATE (f)-[:HAS_NOTIFICATION]->(n:Notification {type: 'review', sender: $user_nickname, book_name: $book_name, rating: $rating, review_text: $review_text, timestamp: datetime()})
+            """, user_nickname=user_nickname, friend_nickname=friend_nickname, book_name=book_name, rating=rating, review_text=review_text)
 
     return redirect(url_for('book_detail', book_name=book_name))
 
@@ -472,9 +497,9 @@ def send_friend_request(nickname):
         db_session.run("""
             MATCH (sender:User {nickname: $sender_nickname}), (receiver:User {nickname: $receiver_nickname})
             MERGE (sender)-[:FRIEND_REQUEST]->(receiver)
-            CREATE (notification:Notification {type: 'friend_request', sender: $sender_nickname, receiver: $receiver_nickname, timestamp: $timestamp})
+            CREATE (notification:Notification {type: 'friend_request', sender: $sender_nickname, receiver: $receiver_nickname, timestamp: datetime()})
             MERGE (receiver)-[:HAS_NOTIFICATION]->(notification)
-        """, sender_nickname=sender_nickname, receiver_nickname=nickname, timestamp=datetime.now().isoformat())
+        """, sender_nickname=sender_nickname, receiver_nickname=nickname)
 
     flash(f'Friend request sent to {nickname}.', 'success')
     return redirect(url_for('profile', nickname=nickname))
@@ -492,10 +517,9 @@ def accept_friend_request(nickname):
             DELETE r
             MERGE (sender)-[:FRIEND]->(receiver)
             MERGE (receiver)-[:FRIEND]->(sender)
-            WITH receiver
-            MATCH (receiver)-[n:HAS_NOTIFICATION]->(notification:Notification {type: 'friend_request', sender: $sender_nickname})
-            DELETE n, notification
         """, sender_nickname=nickname, receiver_nickname=receiver_nickname)
+
+    delete_notification(receiver_nickname, 'friend_request', sender_nickname=nickname)
 
     flash(f'Friend request from {nickname} accepted.', 'success')
     return redirect(url_for('notifications'))
@@ -528,12 +552,53 @@ def notifications():
     with driver.session() as db_session:
         result = db_session.run("""
             MATCH (u:User {nickname: $nickname})-[:HAS_NOTIFICATION]->(n:Notification)
-            RETURN n.type AS type, n.sender AS sender, n.timestamp AS timestamp, n.message AS message
+            RETURN n.type AS type, n.sender AS sender, n.book_name AS book_name, n.rating AS rating, n.review_text AS review_text, n.timestamp AS timestamp
         """, nickname=nickname)
-        notifications = [{"type": record["type"], "sender": record["sender"], "timestamp": record["timestamp"], "message": record.get("message")} for record in result]
+
+        for record in result:
+            notifications.append({
+                "type": record["type"],
+                "sender": record["sender"],
+                "book_name": record["book_name"],
+                "rating": record["rating"],
+                "review_text": record["review_text"],
+                "timestamp": record["timestamp"]
+            })
 
     return render_template('notifications.html', notifications=notifications)
 
+def delete_notification(user_nickname, notification_type, sender_nickname=None, book_name=None):
+    with driver.session() as db_session:
+        query = """
+            MATCH (u:User {nickname: $user_nickname})-[n:HAS_NOTIFICATION]->(notification:Notification {type: $notification_type})
+        """
+        params = {"user_nickname": user_nickname, "notification_type": notification_type}
+
+        if sender_nickname:
+            query += " WHERE notification.sender = $sender_nickname"
+            params["sender_nickname"] = sender_nickname
+
+        if book_name:
+            query += " AND notification.book_name = $book_name"
+            params["book_name"] = book_name
+
+        query += " DELETE n, notification"
+        db_session.run(query, **params)
+
+@app.route('/delete_notification', methods=['POST'])
+def delete_notification_route():
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    user_nickname = session['nickname']
+    sender_nickname = request.args.get('sender')
+    book_name = request.args.get('book_name')
+    notification_type = request.args.get('type')
+
+    delete_notification(user_nickname, notification_type, sender_nickname=sender_nickname, book_name=book_name)
+
+    return '', 204
+        
 @app.route('/create_club', methods=['GET', 'POST'])
 def create_club():
     if 'nickname' not in session:
@@ -603,7 +668,7 @@ def book_club(club_name):
             OPTIONAL MATCH (club)<-[:MEMBER_OF]-(u:User)
             RETURN club.name AS name, club.short_description AS short_description, club.long_description AS long_description, 
                    club.image_url AS image_url, club.large_image_url AS large_image_url, club.is_private AS is_private, 
-                   club.owner AS owner, collect({nickname: u.nickname, full_name: u.full_name, profile_picture: u.profile_picture}) AS members
+                   club.owner AS owner, club.topic AS topic, collect({nickname: u.nickname, full_name: u.full_name, profile_picture: u.profile_picture}) AS members
         """, club_name=club_name)
         record = result.single()
         if record:
@@ -614,6 +679,7 @@ def book_club(club_name):
                 "image_url": record["image_url"],
                 "large_image_url": record["large_image_url"],
                 "is_private": record["is_private"],
+                "topic": record.get("topic", ""),  # Handle the topic field
                 "members": record["members"]
             }
             owner_nickname = record["owner"]
@@ -660,9 +726,9 @@ def join_club(club_name):
             db_session.run("""
                 MATCH (u:User {nickname: $user_nickname}), (club:BookClub {name: $club_name}), (owner:User {nickname: club.owner})
                 CREATE (u)-[:REQUESTED_TO_JOIN]->(club)
-                CREATE (notification:Notification {type: 'join_request', sender: $user_nickname, receiver: club.owner, timestamp: $timestamp})
+                CREATE (notification:Notification {type: 'join_request', sender: $user_nickname, receiver: club.owner, timestamp: datetime()})
                 MERGE (owner)-[:HAS_NOTIFICATION]->(notification)
-            """, user_nickname=user_nickname, club_name=club_name, timestamp=datetime.now().isoformat())
+            """, user_nickname=user_nickname, club_name=club_name)
             flash('Join request sent. The club owner will review your request.', 'success')
         else:
             # Automatically join the club
@@ -714,12 +780,8 @@ def accept_join_request(nickname):
             DELETE r
             CREATE (sender)-[:MEMBER_OF]->(club)
         """, sender_nickname=nickname, club_name=club_name)
-        
-        # Delete the notification
-        db_session.run("""
-            MATCH (receiver)-[n:HAS_NOTIFICATION]->(notification:Notification {type: 'join_request', sender: $sender_nickname})
-            DELETE n, notification
-        """, club_name=club_name, sender_nickname=nickname)
+
+    delete_notification(session['nickname'], 'join_request', sender_nickname=nickname)
 
     flash(f'Join request from {nickname} accepted.', 'success')
     return redirect(url_for('notifications'))
@@ -732,12 +794,14 @@ def edit_club(club_name):
     user_nickname = session['nickname']
 
     with driver.session() as db_session:
-        result = db_session.run("""
+        result = db_session.run(
+            """
             MATCH (u:User {nickname: $user_nickname})-[:OWNER_OF]->(club:BookClub {name: $club_name})
-            RETURN club.name AS name, club.short_description AS short_description, club.long_description AS long_description, 
-                   club.image_url AS image_url, club.large_image_url AS large_image_url, club.is_private AS is_private, 
-                   club.join_question AS join_question
-        """, user_nickname=user_nickname, club_name=club_name)
+            RETURN club.name AS name, club.short_description AS short_description, 
+                   club.long_description AS long_description, 
+                   club.image_url AS image_url, club.large_image_url AS large_image_url, 
+                   club.is_private AS is_private, club.topic AS topic
+            """, user_nickname=user_nickname, club_name=club_name)
         club = result.single()
 
         if not club:
@@ -746,38 +810,51 @@ def edit_club(club_name):
         form = EditBookClubForm()
 
         if form.validate_on_submit():
-            name = form.name.data
             short_description = form.short_description.data
             long_description = form.long_description.data
             is_private = form.is_private.data
 
-            # Handle the image uploads
-            image_file = form.image.data
-            large_image_file = form.large_image.data
-            image_url = club['image_url']
-            large_image_url = club['large_image_url']
+            image = form.image.data
+            large_image = form.large_image.data
 
-            if image_file:
-                image_url = upload_image(image_file)
-            if large_image_file:
-                large_image_url = upload_image(large_image_file)
+            image_url = upload_image(image) if image else club['image_url']
+            large_image_url = upload_image(large_image) if large_image else club['large_image_url']
 
-            db_session.run("""
+            db_session.run(
+                """
                 MATCH (club:BookClub {name: $club_name})
-                SET club.name = $name, club.short_description = $short_description, club.long_description = $long_description,
-                    club.image_url = $image_url, club.large_image_url = $large_image_url, club.is_private = $is_private,
-            """, club_name=club_name, name=name, short_description=short_description, long_description=long_description,
-                image_url=image_url, large_image_url=large_image_url, is_private=is_private)
+                SET club.short_description = $short_description, 
+                    club.long_description = $long_description, 
+                    club.image_url = $image_url, 
+                    club.large_image_url = $large_image_url, 
+                    club.is_private = $is_private, 
+                    club.topic = $topic
+                """,
+                club_name=club_name, short_description=short_description, 
+                long_description=long_description, image_url=image_url, 
+                large_image_url=large_image_url, is_private=is_private, 
+                topic=form.topic.data or "")
 
             flash('Book club updated successfully!', 'success')
             return redirect(url_for('book_club', club_name=club_name))
 
-        form.name.data = club['name']
         form.short_description.data = club['short_description']
         form.long_description.data = club['long_description']
-        form.is_private.data = club['is_private']
+        form.is_private.data = 'private' if club['is_private'] else 'public'
+        form.topic.data = club['topic'] or ""
 
-    return render_template('edit_club.html', form=form)
+    return render_template('edit_club.html', form=form, club=club)
+
+@app.route('/delete_club/<club_name>', methods=['POST'])
+def delete_club(club_name):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    with driver.session() as db_session:
+        db_session.run("MATCH (c:BookClub {name: $club_name}) DETACH DELETE c", club_name=club_name)
+
+    flash(f'Book club {club_name} has been deleted.', 'success')
+    return redirect(url_for('list_clubs'))
 
 @app.route('/kick_member/<club_name>/<member_nickname>', methods=['POST'])
 def kick_member(club_name, member_nickname):
@@ -805,6 +882,45 @@ def kick_member(club_name, member_nickname):
 
     flash(f'{member_nickname} has been kicked out of the club.', 'success')
     return redirect(url_for('book_club', club_name=club_name))
+
+# Event handler for joining a group chat room
+@socketio.on('join')
+def on_join(data):
+    room = data['room']
+    join_room(room)
+    send(f'{session["nickname"]} has joined the room.', to=room)
+
+# Event handler for handling group messages
+@socketio.on('group_message')
+def handle_group_message(data):
+    room = data['room']
+    message = data['message'][:200]  # Limit message length to 200 characters
+    timestamp = datetime.now().isoformat()
+    with driver.session() as db_session:
+        db_session.run("""
+            MATCH (u:User {nickname: $nickname}), (c:BookClub {name: $club_name})
+            CREATE (m:Message {content: $message, timestamp: $timestamp})
+            CREATE (u)-[:SENT]->(m)
+            CREATE (m)-[:IN]->(c)
+        """, nickname=session['nickname'], club_name=room, message=message, timestamp=timestamp)
+    send({'nickname': session['nickname'], 'message': message, 'timestamp': timestamp}, to=room)
+
+@app.route('/group_chat_history/<club_name>')
+def group_chat_history(club_name):
+    if 'nickname' not in session:
+        return redirect(url_for('login'))
+
+    messages = []
+
+    with driver.session() as db_session:
+        result = db_session.run("""
+            MATCH (u:User)-[:SENT]->(m:Message)-[:IN]->(c:BookClub {name: $club_name})
+            RETURN u.nickname AS nickname, m.content AS message, m.timestamp AS timestamp
+            ORDER BY m.timestamp
+        """, club_name=club_name)
+        messages = [{"nickname": record["nickname"], "message": record["message"], "timestamp": record["timestamp"]} for record in result]
+
+    return {"messages": messages}
 
 @app.route('/chat/<friend_nickname>')
 def private_chat(friend_nickname):
@@ -866,6 +982,61 @@ def chat_history(friend_nickname):
         messages = [{"nickname": record["nickname"], "message": record["message"], "timestamp": record["timestamp"]} for record in result]
 
     return {"messages": messages}
+
+@app.route('/search_results')
+def search_results():
+    query = request.args.get('query')
+    books = []
+    clubs = []
+    users = []
+
+    with driver.session() as db_session:
+        # Search for books
+        book_result = db_session.run("""
+            MATCH (b:Book)<-[:WROTE]-(a:Author)
+            WHERE toLower(b.name) CONTAINS toLower($query) OR toLower(a.name) CONTAINS toLower($query) OR toLower(a.surname) CONTAINS toLower($query)
+            RETURN b.name AS book_name, a.name AS author_name, a.surname AS author_surname, b.image_url AS image_url
+        """, {"query": query})
+        books = [
+            {
+                "name": record["book_name"],
+                "author": f"{record['author_name']} {record['author_surname']}",
+                "image_url": record["image_url"]
+            }
+            for record in book_result
+        ]
+
+        # Search for book clubs
+        club_result = db_session.run("""
+            MATCH (c:BookClub)
+            WHERE toLower(c.name) CONTAINS toLower($query) OR toLower(c.short_description) CONTAINS toLower($query)
+            RETURN c.name AS club_name, c.short_description AS short_description, c.image_url AS image_url
+        """, {"query": query})
+        clubs = [
+            {
+                "name": record["club_name"],
+                "short_description": record["short_description"],
+                "image_url": record["image_url"]
+            }
+            for record in club_result
+        ]
+
+        # Search for users
+        user_result = db_session.run("""
+            MATCH (u:User)
+            WHERE toLower(u.nickname) CONTAINS toLower($query) OR toLower(u.full_name) CONTAINS toLower($query)
+            RETURN u.nickname AS nickname, u.full_name AS full_name, u.profile_picture AS profile_picture
+        """, {"query": query})
+        users = [
+            {
+                "nickname": record["nickname"],
+                "full_name": record["full_name"],
+                "profile_picture": record["profile_picture"]
+            }
+            for record in user_result
+        ]
+
+    return render_template('search_results.html', query=query, books=books, clubs=clubs, users=users)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

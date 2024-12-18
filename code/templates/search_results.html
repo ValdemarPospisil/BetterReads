@@ -1,0 +1,75 @@
+{% extends "template.html" %}
+{% block subtitle %}Search Results{% endblock %}
+{% block main %}
+<div class="container">
+    <h1>Search Results for "{{ query }}"</h1>
+    <div class="search-results">
+        <h2>Books</h2>
+        {% if books %}
+            <div class="book-list">
+                {% for book in books %}
+                    <a href="{{ url_for('book_detail', book_name=book.name) }}" class="book-card">
+                        {% if book.image_url %}
+                            <img src="{{ book.image_url }}" alt="{{ book.name }}">
+                        {% else %}
+                            <img src="/static/default_book.png" alt="Default Book">
+                        {% endif %}
+                        <h4>{{ book.name }}</h4>
+                        <p>Author: {{ book.author }}</p>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No books found.</p>
+        {% endif %}
+
+        <h2>Book Clubs</h2>
+        {% if clubs %}
+            <div class="club-list">
+                {% for club in clubs %}
+                    <a href="{{ url_for('book_club', club_name=club.name) }}" class="club-card">
+                        <div class="club-image">
+                            {% if club.image_url %}
+                                <img src="{{ club.image_url }}" alt="{{ club.name }}">
+                            {% else %}
+                                <img src="/static/default_club.png" alt="Default Club Image">
+                            {% endif %}
+                        </div>
+                        <div class="club-details">
+                            <h3>{{ club.name }}</h3>
+                            <p>{{ club.short_description }}</p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No book clubs found.</p>
+        {% endif %}
+
+        <h2>Users</h2>
+        {% if users %}
+            <div class="friend-list">
+                {% for user in users %}
+                    <div class="friend-card">
+                        <a href="{{ url_for('profile', nickname=user.nickname) }}" class="friend-link">
+                            <div class="friend-picture">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture }}" alt="{{ user.nickname }}">
+                                {% else %}
+                                    <img src="/static/imgs/default_profile.jpg" alt="Default Profile Picture">
+                                {% endif %}
+                            </div>
+                            <div class="friend-details">
+                                <h3>{{ user.nickname }}</h3>
+                                <p>{{ user.full_name }}</p>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No users found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -3,23 +3,44 @@
 {% block main %}
 <div class="container">
     <h1>Notifications</h1>
-    <ul class="list-group">
+    <ul class="notification-list">
         {% for notification in notifications %}
-            <li class="list-group-item">
-                {% if notification.type == 'friend_request' %}
-                    <p>{{ notification.sender }} sent you a friend request.</p>
-                    <form method="POST" action="{{ url_for('accept_friend_request', nickname=notification.sender) }}">
-                        <button type="submit" class="btn btn-success">Accept</button>
-                    </form>
-                {% elif notification.type == 'join_request' %}
-                    <p>{{ notification.sender }} wants to join your book club.</p>
-                    <form method="POST" action="{{ url_for('accept_join_request', nickname=notification.sender) }}">
-                        <button type="submit" class="btn btn-success">Accept</button>
-                    </form>
-                {% endif %}
-                <small>{{ notification.timestamp }}</small>
+            <li class="notification-item">
+                <div class="notification-content">
+                    {% if notification.type == 'friend_request' %}
+                        <p>{{ notification.sender }} sent you a friend request.</p>
+                        <form method="POST" action="{{ url_for('accept_friend_request', nickname=notification.sender) }}">
+                            <button type="submit" class="btn btn-success">Accept</button>
+                        </form>
+                    {% elif notification.type == 'join_request' %}
+                        <p>{{ notification.sender }} wants to join your book club.</p>
+                        <form method="POST" action="{{ url_for('accept_join_request', nickname=notification.sender) }}">
+                            <button type="submit" class="btn btn-success">Accept</button>
+                        </form>
+                    {% elif notification.type == 'review' %}
+                        <p>{{ notification.sender }} reviewed a book.</p>
+                        <p>Rating: {{ notification.rating }} stars</p>
+                        {% if notification.review_text %}
+                            <p>Review: {{ notification.review_text }}</p>
+                        {% endif %}
+                        <form method="GET" action="{{ url_for('book_detail', book_name=notification.book_name) }}">
+                            <button class="btn btn-success" onclick="deleteNotification('{{ notification.sender }}', '{{ notification.book_name }}')">View Book</button>
+                        </form>
+                    {% endif %}
+                    <small>{{ notification.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+                <button class="btn-delete" onclick="deleteNotification('{{ notification.sender }}', '{{ notification.book_name }}', '{{ notification.type }}')">X</button>
             </li>
         {% endfor %}
     </ul>
 </div>
+<script>
+    function deleteNotification(sender, bookName, type) {
+        fetch(`/delete_notification?sender=${sender}&book_name=${bookName}&type=${type}`, {
+            method: 'POST'
+        }).then(() => {
+            location.reload();
+        });
+    }
+</script>
 {% endblock %}

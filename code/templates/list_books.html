@@ -10,6 +10,10 @@
                 <option value="{{ genre }}" {% if genre == selected_genre %}selected{% endif %}>{{ genre }}</option>
             {% endfor %}
         </select>
+        <form class="search-form" method="get" value="{{ search_query }}">
+            <input type="text" name="search" placeholder="Search by name or author">
+            <button type="submit">Search</button>
+        </form>
     </form>
     {% if books %}
         <div class="book-list">
