@@ -19,7 +19,7 @@
                     <p>{{ friend.full_name }}</p>
                 </div>
             </a>
-            <form method="POST" action="{{ url_for('private_chat', friend_nickname=nickname)}}">
+            <form method="GET" action="{{ url_for('private_chat', friend_nickname=friend.nickname)}}">
                 <button type="submit" class="btn btn-primary">Chat</button>
             </form>   
         </div>

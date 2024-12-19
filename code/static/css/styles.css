@@ -796,8 +796,8 @@ footer {
     background-color: var(--primary);
     color: var(--foreground);
     border-top: 1px solid var(--border);
-    margin-top: 20px; /* Add margin to separate from content */
     width: 100%;
     position: relative;
     bottom: 0;
+    left: 0;
 }

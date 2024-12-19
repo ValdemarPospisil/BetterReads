@@ -42,9 +42,10 @@
             <button type="submit" class="btn btn-primary">Send Friend Request</button>
         </form>
         {% else %}
-       <form method="POST" action="{{ url_for('private_chat', friend_nickname=nickname)}}">
+       <form method="GEt" action="{{ url_for('private_chat', friend_nickname=nickname)}}">
             <button type="submit" class="btn btn-primary">Chat</button>
         </form>
+
         {% endif %}
     {% endif %}
     <div class="book-status-columns">

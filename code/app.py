@@ -11,7 +11,7 @@ from functools import wraps
 import json
 from datetime import datetime
 from flask_socketio import SocketIO, join_room, leave_room, send
-
+        
 
 app = Flask(__name__)
 # Flask app setup
@@ -283,7 +283,7 @@ def create_author_book_relationship_with_genres(author_name, author_surname, boo
                     pages=book_data["pages"], datePublished=book_data["datePublished"],
                     image_url=book_data["image_url"], genres=genres)
 
-@app.route('/create_book', methods=['GET', 'POST'])
+@app.route('/create_bValdemarPospisil/BetterReads/tree/mainook', methods=['GET', 'POST'])
 @roles_required('admin')
 def create_book():
     form = CreateBookForm()
