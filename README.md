@@ -1,6 +1,5 @@
 # BetterReads
 
-![BetterReads Screenshot](images/screenshot1.png)
 
 BetterReads is a social network focused on books. Users can track their reading progress, add friends, join book clubs, and chat with others. The platform allows users to search and filter books and categorize them as **Want to Read**, **Reading**, or **Read**.
 
@@ -43,8 +42,32 @@ Once running, the application will be accessible at:
 ```
 http://localhost:5000
 ```
+### Neo4j Database Access
 
-![BetterReads Dashboard](images/screenshot2.png)
+Neo4j database is available at:
+
+```
+http://localhost:7474
+```
+
+Login with default credentials (if not changed):
+
+ - Username: _neo4j_
+
+ - Password: _password_
+
+### Graph Visualization
+
+Below is an overview of the Neo4j database structure:
+
+![BetterReads Screenshot](images/neo4j.png)
+
+If you want to explore the graph interactively, open the Neo4j Browser at http://localhost:7474 and run queries like:
+
+```cypher
+MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50;
+```
+
 
 ## Technologies Used
 
@@ -52,6 +75,23 @@ http://localhost:5000
 - **Database:** Neo4j
 - **Frontend:** HTML/CSS/JavaScript
 - **Containerization:** Docker, Docker Compose
+
+## Screenshots
+
+### Books
+![BetterReads Screenshot](images/books.png)
+
+### Profile
+![BetterReads Screenshot](images/profile.png)
+
+### Search query
+![BetterReads Screenshot](images/search.png)
+
+### Notifications
+![BetterReads Screenshot](images/notifs.png)
+
+### Friends
+![BetterReads Screenshot](images/friends.png)
 
 ## Contributing
 
