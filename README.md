@@ -60,7 +60,7 @@ Login with default credentials (if not changed):
 
 Below is an overview of the Neo4j database structure:
 
-![BetterReads Screenshot](images/neo4j.png)
+![BetterReads Screenshot](images/graph(1).png)
 
 If you want to explore the graph interactively, open the Neo4j Browser at http://localhost:7474 and run queries like:
 
