@@ -1,5 +1,4 @@
 neo4j==5.10.0
-redis==5.2.0
 blinker==1.6.2
 click==8.1.7
 colorama==0.4.6
