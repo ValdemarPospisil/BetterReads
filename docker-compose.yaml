@@ -8,7 +8,7 @@ services:
       FLASK_ENV: development  # Change to production for production environment
       NEO4J_URI: "bolt://neo4j:7687"
       NEO4J_USER: "neo4j"
-      NEO4J_PASSWORD: "PassatGolf"
+      NEO4J_PASSWORD: "password"
     depends_on:
       - neo4j
     volumes:
@@ -21,7 +21,7 @@ services:
       - "7474:7474"  # Browser
       - "7687:7687"  # Bolt
     environment:
-      NEO4J_AUTH: "neo4j/PassatGolf"
+      NEO4J_AUTH: "neo4j/password"
     volumes:
       - neo4j_data:/data
 
