@@ -19,21 +19,21 @@ SECRET_KEY = 'you-will-never-guess'
 USER_IMG_FOLDER = 'static/imgs/'
 app.config['UPLOAD_FOLDER'] = USER_IMG_FOLDER
 app.config['SECRET_KEY'] = SECRET_KEY
-app.config['SESSION_TYPE'] = 'filesystem'  # You can choose other session types as well
+app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 socketio = SocketIO(app)
 
 # Configuration       
 cloudinary.config( 
     cloud_name = "dyad41msw", 
-    api_key = "429495373674336", 
-    api_secret = "gQK9cHKJzk83nMU2IEjyO7Efaos", # Click 'View API Keys' above to copy your API secret
+    api_key = "api-key", 
+    api_secret = "api-secret",
     secure=True
 )
 
 NEO4J_URI = "bolt://neo4j:7687"
 NEO4J_USER = "neo4j"
-NEO4J_PASSWORD = "PassatGolf"
+NEO4J_PASSWORD = "password"
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
 
